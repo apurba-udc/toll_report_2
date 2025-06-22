@@ -83,21 +83,17 @@ DATABASES = {
         'ENGINE': 'mssql',
         'NAME': 'ZAKTOLL',
         'USER': 'online',
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'KFZ=123P'),
         'HOST': '115.127.158.186',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',
             'extra_params': 'TrustServerCertificate=yes;Encrypt=yes;',
         },
-    },
-    'sqlite_backup': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-# Use MSSQL as default for production
+# Force MSSQL database usage only
 DATABASE_ROUTERS = []
 
 # Password validation

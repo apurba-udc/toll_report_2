@@ -1,0 +1,464 @@
+{% extends 'base.html' %}
+{% load image_filters %}
+
+{% block title %}Transaction Details - Toll Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .report-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .report-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .report-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #3498db;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .filters-display {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .filter-tag {
+        display: inline-block;
+        background: #3498db;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .transactions-table {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .table {
+        margin: 0;
+    }
+    
+    .table thead th {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(52, 152, 219, 0.1);
+        transform: scale(1.01);
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .sequence-number {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    
+    .payment-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .payment-cash { background: #2ecc71; color: white; }
+    .payment-exempt { background: #e74c3c; color: white; }
+    .payment-etc { background: #3498db; color: white; }
+    .payment-tng { background: #f39c12; color: white; }
+    .payment-other { background: #95a5a6; color: white; }
+    
+    .fare-amount {
+        font-weight: 700;
+        color: #27ae60;
+        font-size: 1.1rem;
+    }
+    
+    .vehicle-class {
+        background: #ecf0f1;
+        color: #2c3e50;
+        padding: 0.3rem 0.6rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .lane-info {
+        background: #667eea;
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .pagination-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pagination {
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .page-link {
+        color: #3498db;
+        border: 2px solid #3498db;
+        padding: 0.75rem 1rem;
+        margin: 0 0.25rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .page-link:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+    
+    .page-item.active .page-link {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+    
+    .back-button {
+        position: fixed;
+        top: 100px;
+        left: 20px;
+        background: rgba(52, 152, 219, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .back-button:hover {
+        background: #3498db;
+        transform: scale(1.1);
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        margin: 2rem 0;
+    }
+    
+    .no-results-icon {
+        font-size: 4rem;
+        color: #95a5a6;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .report-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.8rem;
+        }
+        
+        .back-button {
+            top: 80px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="container">
+        <!-- Back Button -->
+        <button class="back-button" onclick="window.history.back()">
+            <i class="fa fa-arrow-left"></i>
+        </button>
+
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="report-title">
+                <i class="fa fa-list"></i> Transaction Details
+            </h1>
+            
+            <div class="report-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ page_obj.paginator.count }}</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_revenue|format_currency }}</div>
+                    <div class="stat-label">Total Revenue (৳)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ page_obj.paginator.num_pages }}</div>
+                    <div class="stat-label">Total Pages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ page_obj.number }}</div>
+                    <div class="stat-label">Current Page</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Display -->
+        {% if startDate or endDate or startTime or endTime %}
+        <div class="filters-display">
+            <strong><i class="fa fa-filter"></i> Applied Filters:</strong>
+            {% if startDate %}
+                <span class="filter-tag">
+                    <i class="fa fa-calendar"></i> From: {{ startDate }}
+                </span>
+            {% endif %}
+            {% if endDate %}
+                <span class="filter-tag">
+                    <i class="fa fa-calendar"></i> To: {{ endDate }}
+                </span>
+            {% endif %}
+            {% if startTime %}
+                <span class="filter-tag">
+                    <i class="fa fa-clock"></i> Start: {{ startTime }}
+                </span>
+            {% endif %}
+            {% if endTime %}
+                <span class="filter-tag">
+                    <i class="fa fa-clock"></i> End: {{ endTime }}
+                </span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Transactions Table -->
+        {% if transactions %}
+        <div class="transactions-table">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fa fa-hashtag"></i> Sequence</th>
+                            <th><i class="fa fa-calendar"></i> Date & Time</th>
+                            <th><i class="fa fa-road"></i> Lane</th>
+                            <th><i class="fa fa-car"></i> Vehicle Class</th>
+                            <th><i class="fa fa-id-card"></i> Registration</th>
+                            <th><i class="fa fa-credit-card"></i> Payment</th>
+                            <th><i class="fa fa-money-bill"></i> Fare</th>
+                            <th><i class="fa fa-user"></i> Collector</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>
+                                <span class="sequence-number">{{ transaction.sequence }}</span>
+                            </td>
+                            <td>
+                                <div>{{ transaction.capturedate|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ transaction.capturedate|time:"H:i:s" }}</small>
+                            </td>
+                            <td>
+                                <span class="lane-info">{{ transaction.lane }}</span>
+                            </td>
+                            <td>
+                                <span class="vehicle-class">Class {{ transaction.vehicle_class }}</span>
+                            </td>
+                            <td>
+                                {{ transaction.regnumber|default:"N/A" }}
+                            </td>
+                            <td>
+                                {% if transaction.paytype == 'CSH' %}
+                                    <span class="payment-badge payment-cash">Cash</span>
+                                {% elif transaction.paytype == 'VCH' %}
+                                    <span class="payment-badge payment-exempt">Exempt</span>
+                                {% elif transaction.paytype == 'ETC' %}
+                                    <span class="payment-badge payment-etc">ETC</span>
+                                {% elif transaction.paytype == 'TnG' %}
+                                    <span class="payment-badge payment-tng">Touch & Go</span>
+                                {% else %}
+                                    <span class="payment-badge payment-other">{{ transaction.paytype }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="fare-amount">৳{{ transaction.fare|format_currency }}</span>
+                            </td>
+                            <td>
+                                {{ transaction.collectorid|default:"N/A" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-results">
+            <i class="fa fa-search no-results-icon"></i>
+            <h3>No transactions found</h3>
+            <p>Try adjusting your date range or filters</p>
+        </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination-container">
+            <nav aria-label="Transaction pagination">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <button class="page-link" onclick="goToPage(1)">
+                                <i class="fa fa-angle-double-left"></i> First
+                            </button>
+                        </li>
+                        <li class="page-item">
+                            <button class="page-link" onclick="goToPage({{ page_obj.previous_page_number }})">
+                                <i class="fa fa-angle-left"></i> Previous
+                            </button>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <button class="page-link" onclick="goToPage({{ num }})">{{ num }}</button>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <button class="page-link" onclick="goToPage({{ page_obj.next_page_number }})">
+                                Next <i class="fa fa-angle-right"></i>
+                            </button>
+                        </li>
+                        <li class="page-item">
+                            <button class="page-link" onclick="goToPage({{ page_obj.paginator.num_pages }})">
+                                Last <i class="fa fa-angle-double-right"></i>
+                            </button>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} transactions
+                </small>
+            </div>
+        </div>
+        
+        <!-- Hidden form for pagination -->
+        <form id="paginationForm" method="post" action="{% url 'transactions:daily_report' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="startDate" value="{{ startDate }}">
+            <input type="hidden" name="endDate" value="{{ endDate }}">
+            <input type="hidden" name="startTime" value="{{ startTime }}">
+            <input type="hidden" name="endTime" value="{{ endTime }}">
+            <input type="hidden" name="page" id="pageInput" value="">
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Pagination function
+function goToPage(pageNumber) {
+    document.getElementById('pageInput').value = pageNumber;
+    document.getElementById('paginationForm').submit();
+}
+
+// Performance monitoring
+window.addEventListener('load', function() {
+    const loadTime = performance.now();
+    console.log(`Transaction list loaded in ${Math.round(loadTime)}ms`);
+});
+</script>
+{% endblock %} 

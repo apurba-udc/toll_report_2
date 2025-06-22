@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Performance Optimization -->
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <title>{% block title %}Toll Transaction Management System{% endblock %}</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    
+    <!-- Bootstrap CSS (CDN for better caching) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUa2JgN6tZ7eF2H9oIf4w7YRz9qP5bqr8k5E7sV5Ul8E7KoTvPx5GtZ5P7E" crossorigin="anonymous">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    
+    <style>
+        /* Performance optimizations */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Optimized loading states */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        /* Image loading optimization */
+        img {
+            max-width: 100%;
+            height: auto;
+            loading: lazy;
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: all 0.3s ease;
+        }
+        
+        /* Top Navigation Bar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            height: 70px;
+            z-index: 1040;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #333 !important;
+        }
+        
+        #sidebarToggle {
+            border: 2px solid #007bff;
+            color: #007bff;
+            background: transparent;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            padding: 1rem 1.2rem;
+            margin-left: 0.5vw;
+            margin-right: 1rem;
+        }
+        
+        #sidebarToggle:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            transition: left 0.3s ease;
+            z-index: 1050;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar.show {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+        
+        .sidebar-content {
+            padding: 20px 0;
+        }
+        
+        .sidebar .nav-link {
+            color: #bdc3c7 !important;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db !important;
+            border-left-color: #3498db;
+        }
+        
+        .sidebar .nav-link.active {
+            background: rgba(52, 152, 219, 0.3);
+            color: #3498db !important;
+            border-left-color: #3498db;
+        }
+        
+        .sidebar-heading {
+            color: #ecf0f1 !important;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 20px 20px 10px 20px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar .nav-item .nav-item .nav-link {
+            padding: 8px 20px 8px 40px;
+            font-size: 0.9rem;
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1045;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Content area */
+        .content-wrapper {
+            min-height: calc(100vh - 70px);
+            padding: 2rem 0;
+            margin-top: 70px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        /* Responsive optimizations */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 1rem 0;
+            }
+            
+            .container-fluid {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+        
+        /* Performance indicator */
+        .performance-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Optimize form elements */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* Button optimizations */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Performance Badge -->
+    <div class="performance-badge" id="performanceBadge">
+        <i class="fa fa-tachometer-alt"></i> Optimized
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-light fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-primary me-3" type="button" id="sidebarToggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="{% url 'transactions:overview' %}">
+                    <i class="fa fa-chart-bar"></i> Toll Reporting System
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fa fa-chart-bar"></i> Toll Reporting System</h4>
+        </div>
+        <div class="sidebar-content">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'transactions:overview' %}">
+                        <i class="fa fa-home"></i> Overview
+                    </a>
+                </li>
+                
+                <!-- Transaction Reports Section -->
+                <li class="nav-item">
+                    <h6 class="sidebar-heading">
+                        <i class="fa fa-chart-line"></i> Transaction Reports
+                    </h6>
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transactions:report_date' %}">
+                                <i class="fa fa-calendar"></i> Transaction Details
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transactions:report_date_lane' %}">
+                                <i class="fa fa-road"></i> Selected Transaction Details
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Summary Reports Section -->
+                <li class="nav-item">
+                    <h6 class="sidebar-heading">
+                        <i class="fa fa-chart-bar"></i> Summary Reports
+                    </h6>
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transactions:summary_brief' %}">
+                                <i class="fa fa-money-bill"></i> Revenue Summary (Cash Only)
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transactions:summary_detail' %}">
+                                <i class="fa fa-car"></i> Traffic Summary (Cash Only)
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transactions:exempt_details' %}">
+                                <i class="fa fa-ban"></i> Traffic Summary (Exempt Only)
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Additional Features Section -->
+                <li class="nav-item">
+                    <h6 class="sidebar-heading">
+                        <i class="fa fa-cog"></i> More Options
+                    </h6>
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'transactions:transaction_list' %}">
+                                <i class="fa fa-list"></i> Transaction List
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/">
+                                <i class="fa fa-user-shield"></i> Admin Panel
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/logout/">
+                                <i class="fa fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <div class="content-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Toll Transaction Management System. Optimized for Performance.</p>
+            <small class="text-muted">
+                <i class="fa fa-server"></i> Powered by Django | 
+                <i class="fa fa-database"></i> MSSQL Database | 
+                <i class="fa fa-rocket"></i> Performance Optimized
+            </small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            // Toggle sidebar function
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            }
+            
+            // Close sidebar function
+            function closeSidebar() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            }
+            
+            // Toggle sidebar when clicking the toggle button
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            
+            // Close sidebar when clicking the overlay
+            sidebarOverlay.addEventListener('click', closeSidebar);
+            
+            // Close sidebar when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                    closeSidebar();
+                }
+            });
+            
+            // Close sidebar when clicking on a navigation link (mobile behavior)
+            document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    // On mobile devices, close sidebar after navigation
+                    if (window.innerWidth <= 768) {
+                        setTimeout(closeSidebar, 150);
+                    }
+                });
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && sidebar.classList.contains('show')) {
+                    closeSidebar();
+                }
+            });
+            
+            // Add active class to current page link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    
+    <!-- Performance monitoring -->
+    <script>
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            const performanceInfo = performance.now();
+            const badge = document.getElementById('performanceBadge');
+            
+            if (performanceInfo < 1000) {
+                badge.innerHTML = '<i class="fa fa-tachometer-alt"></i> Fast (' + Math.round(performanceInfo) + 'ms)';
+                badge.style.background = 'rgba(40, 167, 69, 0.9)';
+            } else if (performanceInfo < 3000) {
+                badge.innerHTML = '<i class="fa fa-clock"></i> Good (' + Math.round(performanceInfo) + 'ms)';
+                badge.style.background = 'rgba(255, 193, 7, 0.9)';
+            } else {
+                badge.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Slow (' + Math.round(performanceInfo) + 'ms)';
+                badge.style.background = 'rgba(220, 53, 69, 0.9)';
+            }
+            
+            // Hide badge after 5 seconds
+            setTimeout(() => {
+                badge.style.opacity = '0';
+                setTimeout(() => badge.remove(), 300);
+            }, 5000);
+        });
+        
+        // Lazy loading helper
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

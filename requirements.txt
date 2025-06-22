@@ -1,0 +1,8 @@
+Django==4.2.23
+djangorestframework==3.16.0
+django-cors-headers==4.7.0
+pyodbc==5.2.0
+reportlab==4.4.2
+Pillow==11.2.1
+django-mssql==1.8
+python-decouple==3.8 

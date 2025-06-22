@@ -1,0 +1,287 @@
+/* Toll Report System CSS */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Nunito', sans-serif;
+    background-color: #f4f4f4;
+}
+
+#Body {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Navigation Menu */
+#menu {
+    width: 250px;
+    background: #2c3e50;
+    color: white;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    padding: 20px;
+    background: #34495e;
+    text-align: center;
+    border-bottom: 1px solid #3d566e;
+}
+
+.logo h2 {
+    margin: 10px 0 0 0;
+    font-size: 20px;
+}
+
+.logo i {
+    font-size: 30px;
+    color: #3498db;
+}
+
+.items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.items li {
+    border-bottom: 1px solid #3d566e;
+}
+
+.items li a {
+    display: block;
+    padding: 15px 20px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.items li a:hover {
+    background: #3498db;
+    border-left: 5px solid white;
+}
+
+.items li:nth-child(1) {
+    border-left: 5px solid #fff;
+}
+
+/* Main content area */
+#interface {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+
+.navbar {
+    background: white;
+    padding: 15px 25px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.navbar i {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-right: 10px;
+}
+
+.dropDownMenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropDownMenu a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+#main {
+    margin-left: 250px;
+    padding: 30px;
+    min-height: calc(100vh - 80px);
+}
+
+/* Form styles */
+.container1 {
+    background: #3498db;
+    color: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.container1 a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.sub1 {
+    background: #2c3e50;
+    padding: 30px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.sub1 label {
+    color: white;
+    display: inline-block;
+    margin: 10px 15px 10px 0;
+    min-width: 100px;
+}
+
+.sub1 input, .sub1 select {
+    margin: 5px 15px 5px 0;
+    padding: 8px;
+    border: none;
+    border-radius: 3px;
+    min-width: 150px;
+}
+
+.sub1 button {
+    background: #3498db;
+    color: white;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.sub1 button:hover {
+    background: #2980b9;
+}
+
+/* Table styles */
+.table-responsive {
+    background: white;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    background: #34495e;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #2c3e50;
+}
+
+.table td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.table tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.table tr:hover {
+    background: #f1f1f1;
+}
+
+.table img {
+    max-width: 100px;
+    height: auto;
+    border-radius: 3px;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a, .pagination span {
+    padding: 8px 16px;
+    margin: 0 4px;
+    text-decoration: none;
+    border: 1px solid #3498db;
+    color: #3498db;
+    border-radius: 3px;
+}
+
+.pagination a:hover {
+    background: #3498db;
+    color: white;
+}
+
+.pagination .current {
+    background: #3498db;
+    color: white;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+/* Report headers */
+h1, h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+h4 {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 30px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #menu {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    #interface, #main {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+} 

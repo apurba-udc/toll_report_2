@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load image_filters %}
+
+{% block title %}Exempt Transaction Report - Toll Report System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-header {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    .report-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .report-subtitle {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    .report-period {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    .summary-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .summary-table th {
+        background: #e74c3c;
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 1rem 0.75rem;
+        text-align: center;
+    }
+    .summary-table td {
+        padding: 0.75rem;
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .summary-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    .total-row {
+        background: #fce4ec !important;
+        font-weight: bold;
+    }
+    .total-row td {
+        border-top: 2px solid #e74c3c;
+    }
+    .lane-badge {
+        background: #e74c3c;
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+    .back-button {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+    .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    .stats-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-item {
+        flex: 1;
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .exempt-badge {
+        background: #e74c3c;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="report-header">
+        <div class="report-title">Exempt Transaction Report</div>
+        <div class="report-subtitle">Traffic Summary (Exempt Only)</div>
+        <div class="report-period">
+            <i class="fa fa-calendar" aria-hidden="true"></i>
+            {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
+        </div>
+    </div>
+
+    {% if exempt_summary %}
+    <!-- Summary Statistics -->
+    <div class="stats-row">
+        <div class="stat-item">
+            <div class="stat-value">{{ exempt_summary|length }}</div>
+            <div class="stat-label">Active Lanes</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ total_exempt_vehicles|default:0 }}</div>
+            <div class="stat-label">Total Exempt Vehicles</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">
+                <span class="exempt-badge">VCH ONLY</span>
+            </div>
+            <div class="stat-label">Payment Type</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="summary-table">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fa fa-road"></i> Lane</th>
+                                {% for vehicle_class in vehicle_classes %}
+                                    <th>
+                                        <i class="fa fa-{% if vehicle_class == '1' %}motorcycle{% elif vehicle_class == '2' %}car{% elif vehicle_class in '345' %}truck{% else %}bus{% endif %}"></i> 
+                                        {{ vehicle_class_displays|lookup:vehicle_class|default:"Class "|add:vehicle_class }}
+                                    </th>
+                                {% endfor %}
+                                <th><i class="fa fa-calculator"></i> Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lane in exempt_summary %}
+                            <tr>
+                                <td>
+                                    <span class="lane-badge">{{ lane.lane_display }}</span>
+                                </td>
+                                {% for vehicle_class in vehicle_classes %}
+                                <td>
+                                    {{ lane.classes|lookup:vehicle_class|default:0 }}
+                                </td>
+                                {% endfor %}
+                                <td>
+                                    <strong>{{ lane.total_vehicles }}</strong>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            <!-- Grand Total Row -->
+                            <tr class="total-row">
+                                <td><strong>TOTAL</strong></td>
+                                {% for vehicle_class in vehicle_classes %}
+                                <td>
+                                    <strong>{{ grand_totals.classes|lookup:vehicle_class|default:0 }}</strong>
+                                </td>
+                                {% endfor %}
+                                <td>
+                                    <strong>{{ grand_totals.total_vehicles }}</strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="stats-card">
+        <i class="fa fa-search" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
+        <h3>No Data Found</h3>
+        <p class="text-muted">No exempt transactions found for the selected date range.</p>
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'transactions:exempt_details' %}" class="btn btn-danger back-button">
+            <i class="fa fa-arrow-left"></i> Back to Exempt Form
+        </a>
+    </div>
+</div>
+{% endblock %} 

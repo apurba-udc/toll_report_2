@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}Selected Transaction Details - Toll Report System{% endblock %}
+
+{% block extra_css %}
+<style>
+.items li:nth-child(3){
+    border-left: 5px solid #fff;
+}
+
+.form-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.form-card {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    color: white;
+}
+
+.form-header {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.form-header p {
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.form-body {
+    padding: 3rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    align-items: end;
+}
+
+.form-group {
+    flex: 1;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-control option {
+    background: #2c3e50;
+    color: white;
+    padding: 0.5rem;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: block;
+    margin: 2rem auto 0;
+}
+
+.submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.filter-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.filter-title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.info-note {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.filter-description {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-body {
+        padding: 2rem 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1><i class="fa fa-filter"></i> Selected Transaction Details</h1>
+            <p>Filter and generate detailed transaction reports with advanced criteria</p>
+        </div>
+        
+        <div class="form-body">
+            <form action="{% url 'transactions:daily_shift_report' %}" target="_blank" method="post">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="startDate">
+                            <i class="fa fa-calendar"></i> From Date
+                        </label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="startDate" 
+                               name="startDate" 
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="endDate">
+                            <i class="fa fa-calendar"></i> To Date
+                        </label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="endDate" 
+                               name="endDate" 
+                               required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="startTime">
+                            <i class="fa fa-clock-o"></i> From Time
+                        </label>
+                        <input type="time" 
+                               class="form-control" 
+                               id="startTime" 
+                               name="startTime" 
+                               value="00:00:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="endTime">
+                            <i class="fa fa-clock-o"></i> To Time
+                        </label>
+                        <input type="time" 
+                               class="form-control" 
+                               id="endTime" 
+                               name="endTime" 
+                               value="23:59:59">
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fa fa-sliders"></i> Advanced Filters
+                    </div>
+                    
+                    <div class="filter-description">
+                        Use the filters below to narrow down your search results. Select "All" to include all options for that category.
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="lane">
+                                <i class="fa fa-road"></i> Lane Selection
+                            </label>
+                            <select name="lane" id="lane" class="form-control">
+                                <option value="All">All Lanes</option>
+                                <option value="E101">Emergency Lane (E101)</option>
+                                <option value="L101">Lane 101</option>
+                                <option value="L102">Lane 102</option>
+                                <option value="L103">Lane 103</option>
+                                <option value="L104">Lane 104</option>
+                                <option value="L105">Lane 105</option>
+                                <option value="L106">Lane 106</option>
+                                <option value="L107">Lane 107</option>
+                                <option value="L108">Lane 108</option>
+                                <option value="L109">Lane 109</option>
+                                <option value="L110">Lane 110</option>
+                                <option value="L112">Lane 112</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="vType">
+                                <i class="fa fa-car"></i> Vehicle Type
+                            </label>
+                            <select name="vType" id="vType" class="form-control">
+                                <option value="All">All Vehicle Types</option>
+                                <option value="1">Class 1 (Motorcycle)</option>
+                                <option value="2">Class 2 (Car/Jeep)</option>
+                                <option value="3">Class 3 (Small Truck)</option>
+                                <option value="4">Class 4 (Medium Truck)</option>
+                                <option value="5">Class 5 (Large Truck)</option>
+                                <option value="6">Class 6 (Bus)</option>
+                                <option value="7">Class 7 (Large Bus)</option>
+                                <option value="8">Class 8 (Trailer)</option>
+                                <option value="9">Class 9 (Multi-Axle)</option>
+                                <option value="10">Class 10 (Special)</option>
+                                <option value="Violation">Violation/Penalty</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="pType">
+                                <i class="fa fa-credit-card"></i> Payment Type
+                            </label>
+                            <select name="pType" id="pType" class="form-control">
+                                <option value="All">All Payment Types</option>
+                                <option value="Cash">Cash Payment</option>
+                                <option value="Exempt">Exempt/Free Pass</option>
+                                <option value="ETC">Electronic Toll Collection</option>
+                                <option value="TnG">Touch n Go</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <i class="fa fa-search"></i> Generate Filtered Report
+                </button>
+                
+                <div class="info-note">
+                    <i class="fa fa-info-circle"></i>
+                    Report will show filtered results with images and detailed transaction information
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set default dates and enhance form functionality
+document.addEventListener('DOMContentLoaded', function() {
+    var today = new Date();
+    var todayString = today.toISOString().split('T')[0];
+    
+    // Set default values
+    document.getElementById('startDate').value = todayString;
+    document.getElementById('endDate').value = todayString;
+    
+    // Add quick date selection buttons
+    const formBody = document.querySelector('.form-body');
+    const quickButtons = document.createElement('div');
+    quickButtons.innerHTML = `
+        <div style="text-align: center; margin: 1rem 0;">
+            <p style="opacity: 0.8; margin-bottom: 0.5rem;">Quick Select:</p>
+            <button type="button" onclick="setDateRange('today')" style="margin: 0.25rem; padding: 0.5rem 1rem; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; border-radius: 5px; cursor: pointer;">Today</button>
+            <button type="button" onclick="setDateRange('yesterday')" style="margin: 0.25rem; padding: 0.5rem 1rem; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; border-radius: 5px; cursor: pointer;">Yesterday</button>
+            <button type="button" onclick="setDateRange('week')" style="margin: 0.25rem; padding: 0.5rem 1rem; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; border-radius: 5px; cursor: pointer;">This Week</button>
+            <button type="button" onclick="setDateRange('month')" style="margin: 0.25rem; padding: 0.5rem 1rem; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; border-radius: 5px; cursor: pointer;">This Month</button>
+        </div>
+    `;
+    
+    // Insert before the filter section
+    const filterSection = document.querySelector('.filter-section');
+    formBody.insertBefore(quickButtons, filterSection);
+});
+
+function setDateRange(period) {
+    const today = new Date();
+    let startDate, endDate;
+    
+    switch(period) {
+        case 'today':
+            startDate = endDate = today;
+            break;
+        case 'yesterday':
+            startDate = endDate = new Date(today.getTime() - 24*60*60*1000);
+            break;
+        case 'week':
+            startDate = new Date(today.getTime() - (today.getDay() * 24*60*60*1000));
+            endDate = today;
+            break;
+        case 'month':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = today;
+            break;
+    }
+    
+    document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+}
+</script>
+{% endblock %} 

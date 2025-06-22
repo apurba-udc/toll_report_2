@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load image_filters %}
+
+{% block title %}{{ title }} - Toll Report System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    .report-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .report-subtitle {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    .report-period {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    .filter-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 5px;
+        margin-top: 1rem;
+    }
+    .filter-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        margin: 0.2rem;
+        display: inline-block;
+    }
+    .transaction-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .transaction-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        border: none;
+        padding: 1rem 0.75rem;
+        text-align: center;
+    }
+    .transaction-table td {
+        padding: 0.75rem;
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .transaction-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    .transaction-image {
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+        width: 80px;
+        height: 60px;
+        object-fit: cover;
+    }
+    .transaction-image:hover {
+        transform: scale(1.05);
+    }
+    .image-placeholder {
+        width: 80px;
+        height: 60px;
+        background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0),
+                    linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0);
+        background-size: 8px 8px;
+        background-position: 0 0, 4px 4px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .image-placeholder:hover {
+        background-color: #e9ecef;
+    }
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .badge-payment {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    .badge-cash { background-color: #28a745; }
+    .badge-exempt { background-color: #dc3545; }
+    .badge-etc { background-color: #007bff; }
+    .badge-tng { background-color: #ffc107; color: #212529; }
+    .pagination-modern {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .pagination-modern .pagination {
+        margin: 0;
+        justify-content: center;
+    }
+    .pagination-modern .page-link {
+        border: none;
+        margin: 0 0.25rem;
+        border-radius: 5px;
+        padding: 0.5rem 1rem;
+        color: #495057;
+    }
+    .pagination-modern .page-link:hover {
+        background-color: #e9ecef;
+    }
+    .pagination-modern .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .back-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+    .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .performance-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="report-header">
+        <div class="report-title">Shaheed Wasim Akram Expressway</div>
+        <div class="report-subtitle">Patenga Toll Plaza</div>
+        <div class="report-period">
+            <i class="fa fa-calendar" aria-hidden="true"></i>
+            {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
+        </div>
+        
+        {% if selected_lane != "All" or selected_vtype != "All" or selected_ptype != "All" %}
+        <div class="filter-info">
+            <strong><i class="fa fa-filter"></i> Active Filters:</strong>
+            {% if selected_lane != "All" %}
+                <span class="filter-badge"><i class="fa fa-road"></i> Lane: {{ selected_lane }}</span>
+            {% endif %}
+            {% if selected_vtype != "All" %}
+                <span class="filter-badge"><i class="fa fa-car"></i> Vehicle: {{ selected_vtype }}</span>
+            {% endif %}
+            {% if selected_ptype != "All" %}
+                <span class="filter-badge"><i class="fa fa-credit-card"></i> Payment: {{ selected_ptype }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="performance-info">
+            <i class="fa fa-info-circle"></i>
+            Showing {{ laneShift.start_index }} - {{ laneShift.end_index }} of {{ laneShift.paginator.count }} transactions
+            | Images load on-demand for better performance
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="transaction-table">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fa fa-hashtag"></i> S/N</th>
+                                <th><i class="fa fa-barcode"></i> Trans No.</th>
+                                <th><i class="fa fa-clock-o"></i> Date & Time</th>
+                                <th><i class="fa fa-user"></i> Collector</th>
+                                <th><i class="fa fa-road"></i> Lane</th>
+                                <th><i class="fa fa-car"></i> Vehicle Type</th>
+                                <th><i class="fa fa-id-card"></i> Reg. Number</th>
+                                <th><i class="fa fa-credit-card"></i> Payment</th>
+                                <th><i class="fa fa-money"></i> Fare</th>
+                                <th><i class="fa fa-camera"></i> Image</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tran in laneShift %}
+                            <tr>
+                                <td><strong>{{ forloop.counter0|add:laneShift.start_index }}</strong></td>
+                                <td><code>{{ tran.sequence }}</code></td>
+                                <td>{{ tran.capturedate|date:"M d, Y" }}<br><small class="text-muted">{{ tran.capturedate|date:"H:i:s" }}</small></td>
+                                <td>{{ tran.collectorid|default:"N/A" }}</td>
+                                <td><span class="badge badge-secondary">{{ tran.lane|default:"N/A" }}</span></td>
+                                <td>{{ tran.get_vehicle_type_display }}</td>
+                                <td>{{ tran.regnumber|default:"N/A" }}</td>
+                                <td>
+                                    {% if tran.paytype == 'CSH' %}
+                                        <span class="badge badge-cash">Cash</span>
+                                    {% elif tran.paytype == 'VCH' %}
+                                        <span class="badge badge-exempt">Exempt</span>
+                                    {% elif tran.paytype == 'ETC' %}
+                                        <span class="badge badge-etc">ETC</span>
+                                    {% elif tran.paytype == 'TnG' %}
+                                        <span class="badge badge-tng">T&G</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ tran.paytype|default:"N/A" }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>৳{{ tran.fare|format_currency }}</strong></td>
+                                <td>
+                                    {% if tran.pic %}
+                                        <div class="image-placeholder" 
+                                             onclick="loadAndShowImage(this, '{{ tran.sequence }}')"
+                                             data-sequence="{{ tran.sequence }}">
+                                            <i class="fa fa-camera"></i><br>
+                                            <small>Click to load</small>
+                                        </div>
+                                    {% else %}
+                                        <div style="text-align: center; color: #6c757d; font-size: 0.8rem; width: 80px; height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px dashed #ddd; border-radius: 5px;">
+                                            <i class="fa fa-ban"></i><br>No Image
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="no-data">
+                                    <i class="fa fa-search"></i>
+                                    <div>No transactions found for the selected criteria</div>
+                                    <small class="text-muted">Try adjusting your filters or date range</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if laneShift.has_other_pages %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="pagination-modern">
+                <nav aria-label="Transaction pagination">
+                    <ul class="pagination">
+                        {% if laneShift.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                                    <i class="fa fa-angle-double-left"></i> First
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ laneShift.previous_page_number }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                                    <i class="fa fa-angle-left"></i> Previous
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ laneShift.number }} of {{ laneShift.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if laneShift.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ laneShift.next_page_number }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                                    Next <i class="fa fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ laneShift.paginator.num_pages }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                                    Last <i class="fa fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'transactions:report_date_lane' %}" class="btn btn-primary back-button">
+            <i class="fa fa-arrow-left"></i> Back to Report Form
+        </a>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Transaction Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Transaction Image" />
+                <div id="modalLoading" style="display: none;">
+                    <div class="loading-spinner mx-auto"></div>
+                    <p class="mt-2">Loading image...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Lazy loading for images - load only when clicked
+function loadAndShowImage(element, sequence) {
+    // Show loading state
+    element.innerHTML = '<div class="loading-spinner"></div>';
+    
+    // Fetch image data via AJAX
+    fetch(`/api/image/${sequence}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.image) {
+                // Create actual image element
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${data.image}`;
+                img.className = 'transaction-image';
+                img.onclick = () => openImageModal(img.src);
+                img.onerror = () => {
+                    element.innerHTML = '<div style="color: #dc3545; font-size: 0.8rem;"><i class="fa fa-exclamation-triangle"></i><br>Load Error</div>';
+                };
+                
+                // Replace placeholder with image
+                element.replaceWith(img);
+            } else {
+                element.innerHTML = '<div style="color: #6c757d; font-size: 0.8rem;"><i class="fa fa-ban"></i><br>No Image</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading image:', error);
+            element.innerHTML = '<div style="color: #dc3545; font-size: 0.8rem;"><i class="fa fa-exclamation-triangle"></i><br>Load Error</div>';
+        });
+}
+
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
+</script>
+{% endblock %} 

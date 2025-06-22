@@ -1,0 +1,15 @@
+# Database Configuration for MSSQL
+DB_NAME=your_database_name
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_HOST=115.127.158.186
+DB_PORT=1433
+
+# Django Configuration
+SECRET_KEY=your-secret-key-here-replace-with-actual-secret
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1,115.127.158.188
+
+# Optional: For production deployment
+# DEBUG=False
+# ALLOWED_HOSTS=your-domain.com,115.127.158.188 

@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load image_filters %}
+
+{% block title %}{{ title }} - Toll Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+
+    
+    .page-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .report-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .report-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-subtitle {
+        font-size: 1.8rem;
+        color: #34495e;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-period {
+        font-size: 1.2rem;
+        color: #7f8c8d;
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .summary-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .summary-value {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .summary-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .traffic-table-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .traffic-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+    
+    .traffic-table th {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 1rem 0.5rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .traffic-table td {
+        padding: 0.8rem 0.5rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        background: white;
+    }
+    
+    .traffic-table tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    .traffic-table tbody tr:hover {
+        background: #e8f5e8;
+    }
+    
+    .lane-header {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+        color: white !important;
+        font-weight: 700;
+    }
+    
+    .class-header {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+        color: white !important;
+        font-weight: 600;
+    }
+    
+    .total-row {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+        color: white !important;
+        font-weight: 700;
+    }
+    
+    .cash-count-cell { 
+        background-color: #d5f4e6 !important; 
+        color: #27ae60; 
+        font-weight: 600; 
+    }
+    
+    .cash-amount-cell {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+        color: white !important;
+        font-weight: 700;
+    }
+    
+    .back-button {
+        position: fixed;
+        top: 2rem;
+        left: 2rem;
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+        z-index: 1000;
+    }
+    
+    .back-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(39, 174, 96, 0.4);
+    }
+    
+    @media (max-width: 768px) {
+        .traffic-table {
+            font-size: 0.7rem;
+        }
+        
+        .traffic-table th,
+        .traffic-table td {
+            padding: 0.5rem 0.3rem;
+        }
+        
+        .report-title {
+            font-size: 2rem;
+        }
+        
+        .summary-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #7f8c8d;
+    }
+    
+    .no-data-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #bdc3c7;
+    }
+    
+    .cash-only-badge {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="container-fluid">
+        <!-- Back Button -->
+        <button class="back-button" onclick="window.history.back()">
+            <i class="fa fa-arrow-left"></i>
+        </button>
+
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="report-title">
+                <i class="fa fa-money-bill"></i>
+                Shaheed Wasim Akram Expressway
+            </h1>
+            <h2 class="report-subtitle">Patenga Toll Plaza</h2>
+            <div class="cash-only-badge">
+                <i class="fa fa-coins"></i> Cash Transactions Only
+            </div>
+            <div class="report-period">
+                <i class="fa fa-calendar"></i>
+                {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
+            </div>
+        </div>
+
+
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <span class="summary-value">{{ grand_totals.total_vehicles }}</span>
+                <div class="summary-label">
+                    <i class="fa fa-car"></i> Total Cash Vehicles
+                </div>
+            </div>
+            <div class="summary-card">
+                <span class="summary-value">₹{{ grand_totals.total_amount|format_currency }}</span>
+                <div class="summary-label">
+                    <i class="fa fa-coins"></i> Total Cash Revenue
+                </div>
+            </div>
+            <div class="summary-card">
+                <span class="summary-value">{{ vehicle_classes|length }}</span>
+                <div class="summary-label">
+                    <i class="fa fa-list"></i> Vehicle Classes
+                </div>
+            </div>
+            <div class="summary-card">
+                <span class="summary-value">{{ traffic_summary|length }}</span>
+                <div class="summary-label">
+                    <i class="fa fa-road"></i> Active Lanes
+                </div>
+            </div>
+        </div>
+
+        <!-- Traffic Summary Table -->
+        <div class="traffic-table-container">
+            <h3 class="table-title">
+                <i class="fa fa-table"></i> Cash Transactions Summary by Lane & Vehicle Class
+            </h3>
+            
+            {% if traffic_summary %}
+            <div class="table-responsive">
+                <table class="traffic-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="lane-header">Lane</th>
+                            {% for vehicle_class in vehicle_classes %}
+                            <th colspan="2" class="class-header">
+                                {{ vehicle_class_displays|lookup:vehicle_class|default:vehicle_class }}
+                                ({{ vehicle_class }})
+                            </th>
+                            {% endfor %}
+                            <th rowspan="2" class="lane-header">Total<br>Vehicles</th>
+                            <th rowspan="2" class="cash-amount-cell">Total<br>Amount<br>(৳)</th>
+                        </tr>
+                        <tr>
+                            {% for vehicle_class in vehicle_classes %}
+                            <th class="cash-count-cell">Count</th>
+                            <th class="cash-amount-cell">Amount</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lane_data in traffic_summary %}
+                        <tr>
+                            <td class="lane-header">{{ lane_data.lane_display }}</td>
+                            {% for vehicle_class in vehicle_classes %}
+                            {% with class_data=lane_data.classes|lookup:vehicle_class %}
+                            <td class="cash-count-cell">{{ class_data.count|default:0 }}</td>
+                            <td class="cash-amount-cell">₹{{ class_data.amount|format_currency|default:"0.00" }}</td>
+                            {% endwith %}
+                            {% endfor %}
+                            <td class="lane-header">{{ lane_data.total_vehicles }}</td>
+                            <td class="cash-amount-cell">₹{{ lane_data.total_amount|format_currency }}</td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Grand Total Row -->
+                        <tr class="total-row">
+                            <td><strong>TOTAL</strong></td>
+                            {% for vehicle_class in vehicle_classes %}
+                            {% with class_total=grand_totals.classes|lookup:vehicle_class %}
+                            <td><strong>{{ class_total.count|default:0 }}</strong></td>
+                            <td><strong>₹{{ class_total.amount|format_currency|default:"0.00" }}</strong></td>
+                            {% endwith %}
+                            {% endfor %}
+                            <td><strong>{{ grand_totals.total_vehicles }}</strong></td>
+                            <td><strong>₹{{ grand_totals.total_amount|format_currency }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+
+            
+            {% else %}
+            <div class="no-data">
+                <i class="fa fa-search no-data-icon"></i>
+                <h3>No Cash Transaction Data Found</h3>
+                <p>No cash transactions found for the selected time period.</p>
+                <p class="text-muted">Try adjusting your date range or check if there were any cash transactions during this period.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <a href="{% url 'transactions:summary_detail' %}" class="btn btn-primary btn-lg">
+                <i class="fa fa-arrow-left"></i> Back to Report Form
+            </a>
+            <button onclick="window.print()" class="btn btn-success btn-lg ms-3">
+                <i class="fa fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Performance monitoring
+window.addEventListener('load', function() {
+    const loadTime = performance.now();
+    console.log(`Cash transactions summary loaded in ${Math.round(loadTime)}ms`);
+    
+    // Add table responsiveness for mobile
+    if (window.innerWidth < 768) {
+        const table = document.querySelector('.traffic-table');
+        if (table) {
+            table.style.fontSize = '0.6rem';
+        }
+    }
+});
+
+// Print optimization
+window.addEventListener('beforeprint', function() {
+    document.body.style.background = 'white';
+    const pageContainer = document.querySelector('.page-container');
+    if (pageContainer) {
+        pageContainer.style.background = 'white';
+        pageContainer.style.padding = '1rem';
+    }
+});
+
+window.addEventListener('afterprint', function() {
+    location.reload(); // Restore original styling
+});
+</script>
+{% endblock %} 

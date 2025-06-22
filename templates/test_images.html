@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Loading Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .image-test {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-image {
+            width: 100px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+        .test-info {
+            flex: 1;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Image Loading Test Page</h1>
+    
+    <div class="test-container">
+        <h3>Test Sequences</h3>
+        <p>Testing image loading for known sequences with images:</p>
+        
+        <button onclick="testAllImages()">🔄 Test All Images</button>
+        <button onclick="clearLog()">🗑️ Clear Log</button>
+        
+        <div id="imageTests">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Debug Log</h3>
+        <div id="debugLog" class="log">Ready to test images...\n</div>
+    </div>
+
+    <script>
+        const sequences = ['496B3', '539C4', '69FAF', '6088E', '496B2'];
+        let logElement;
+        
+        function log(message) {
+            if (!logElement) {
+                logElement = document.getElementById('debugLog');
+            }
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            if (!logElement) {
+                logElement = document.getElementById('debugLog');
+            }
+            logElement.textContent = 'Log cleared...\n';
+        }
+        
+        function createTestElement(sequence) {
+            return `
+                <div class="image-test" id="test-${sequence}">
+                    <img id="img-${sequence}" class="test-image" style="display: none;" 
+                         onload="onImageLoad('${sequence}')" 
+                         onerror="onImageError('${sequence}')">
+                    <div class="test-info">
+                        <strong>Sequence: ${sequence}</strong><br>
+                        <span id="status-${sequence}" class="status loading">Waiting...</span><br>
+                        <small id="details-${sequence}">Click test button to load</small>
+                    </div>
+                    <button onclick="testSingleImage('${sequence}')">Test</button>
+                </div>
+            `;
+        }
+        
+        function updateStatus(sequence, status, details, className) {
+            const statusEl = document.getElementById(`status-${sequence}`);
+            const detailsEl = document.getElementById(`details-${sequence}`);
+            
+            statusEl.textContent = status;
+            statusEl.className = `status ${className}`;
+            detailsEl.textContent = details;
+        }
+        
+        function onImageLoad(sequence) {
+            log(`✅ Image loaded successfully for sequence ${sequence}`);
+            updateStatus(sequence, 'SUCCESS', 'Image loaded and displayed', 'success');
+            document.getElementById(`img-${sequence}`).style.display = 'block';
+        }
+        
+        function onImageError(sequence) {
+            log(`❌ Image failed to load for sequence ${sequence}`);
+            updateStatus(sequence, 'ERROR', 'Failed to load image', 'error');
+        }
+        
+        async function testSingleImage(sequence) {
+            log(`🔍 Testing image for sequence: ${sequence}`);
+            updateStatus(sequence, 'LOADING', 'Fetching image...', 'loading');
+            
+            const img = document.getElementById(`img-${sequence}`);
+            img.style.display = 'none';
+            
+            const apiUrl = `/api/image/${sequence}/`;
+            log(`📡 Fetching: ${apiUrl}`);
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'image/jpeg,image/png,image/*'
+                    }
+                });
+                
+                log(`📨 Response status: ${response.status} ${response.statusText}`);
+                log(`📨 Content-Type: ${response.headers.get('Content-Type')}`);
+                log(`📨 Content-Length: ${response.headers.get('Content-Length')}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                log(`💾 Blob size: ${blob.size} bytes`);
+                log(`💾 Blob type: ${blob.type}`);
+                
+                if (blob.size === 0) {
+                    throw new Error('Empty image data received');
+                }
+                
+                const imageUrl = URL.createObjectURL(blob);
+                log(`🔗 Created blob URL: ${imageUrl.substring(0, 50)}...`);
+                
+                img.src = imageUrl;
+                updateStatus(sequence, 'LOADING', 'Loading image element...', 'loading');
+                
+                // Store URL for cleanup
+                img.dataset.blobUrl = imageUrl;
+                
+            } catch (error) {
+                log(`💥 Error testing ${sequence}: ${error.message}`);
+                updateStatus(sequence, 'ERROR', error.message, 'error');
+            }
+        }
+        
+        async function testAllImages() {
+            log(`🚀 Starting test for all ${sequences.length} sequences...`);
+            
+            for (const sequence of sequences) {
+                await testSingleImage(sequence);
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log(`✨ All tests completed!`);
+        }
+        
+        // Initialize the page
+        function initPage() {
+            const container = document.getElementById('imageTests');
+            container.innerHTML = sequences.map(createTestElement).join('');
+            log(`🏁 Page initialized with ${sequences.length} test sequences`);
+        }
+        
+        // Cleanup blob URLs when page unloads
+        window.addEventListener('beforeunload', function() {
+            sequences.forEach(sequence => {
+                const img = document.getElementById(`img-${sequence}`);
+                if (img && img.dataset.blobUrl) {
+                    URL.revokeObjectURL(img.dataset.blobUrl);
+                }
+            });
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('load', initPage);
+    </script>
+</body>
+</html> 

@@ -1,11 +1,33 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
+
+
+class ReadOnlyManager(models.Manager):
+    """
+    Manager that prevents any write operations on Transaction table
+    """
+    def create(self, **kwargs):
+        raise PermissionDenied("Transaction টেবিলে কোনো নতুন ডেটা যোগ করা নিষিদ্ধ। এটি read-only টেবিল।")
+    
+    def bulk_create(self, objs, **kwargs):
+        raise PermissionDenied("Transaction টেবিলে bulk create অনুমতিত নয়।")
+    
+    def update(self, **kwargs):
+        raise PermissionDenied("Transaction টেবিলে কোনো আপডেট অনুমতিত নয়।")
+    
+    def bulk_update(self, objs, fields, **kwargs):
+        raise PermissionDenied("Transaction টেবিলে bulk update অনুমতিত নয়।")
+    
+    def delete(self):
+        raise PermissionDenied("Transaction টেবিল থেকে কোনো ডেটা ডিলিট করা নিষিদ্ধ।")
 
 
 class Transaction(models.Model):
     """
     Model representing toll transaction data
     This maps to the TRANSACTION table in MSSQL
+    IMPORTANT: This table is READ-ONLY - no modifications allowed
     """
     
     # Table fields based on Laravel controller usage
@@ -23,10 +45,19 @@ class Transaction(models.Model):
     pic = models.BinaryField(db_column='PIC', blank=True, null=True)  # Binary image data
     shift = models.CharField(max_length=10, db_column='SHIFT', blank=True, null=True)
     
+    objects = ReadOnlyManager()  # Custom manager to prevent modifications
+    
     class Meta:
-        db_table = '[TRANSACTION]'  # Escaped table name for SQL Server
-        managed = False  # This is a database view, not managed by Django
+        db_table = 'TRANSACTION'  # Direct table name for MSSQL
+        managed = False  # This table exists in ZAKTOLL database, Django doesn't manage it
         ordering = ['-capturedate']
+        default_permissions = ()  # No default permissions for this model
+    
+    def save(self, *args, **kwargs):
+        raise PermissionDenied("Transaction টেবিলে কোনো পরিবর্তন অনুমতিত নয়। এটি read-only টেবিল।")
+    
+    def delete(self, *args, **kwargs):
+        raise PermissionDenied("Transaction টেবিল থেকে কোনো ডেটা ডিলিট করা নিষিদ্ধ।")
     
     def __str__(self):
         return f"Transaction {self.sequence} - Lane {self.lane} - {self.capturedate}"

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript Debug Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .test-container { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .image-placeholder { 
+            width: 50px; height: 35px; background: #95a5a6; 
+            display: flex; align-items: center; justify-content: center;
+            color: white; cursor: pointer; border-radius: 5px;
+        }
+        .loading-spinner {
+            width: 16px; height: 16px; border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea; border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 9px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>JavaScript Function Test</h1>
+    
+    <div class="test-container">
+        <h3>Test 1: Function Definition Check</h3>
+        <button onclick="checkFunctions()">Check if functions exist</button>
+        <div id="function-check-result"></div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Test 2: Image Loading Test</h3>
+        <div class="image-container">
+            <div class="loading-spinner" id="loading-TEST123" style="display: none;"></div>
+            <div class="image-placeholder" id="placeholder-TEST123" onclick="loadImage('TEST123')">
+                📷
+            </div>
+        </div>
+        <div id="image-test-result"></div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Test 3: API Test</h3>
+        <button onclick="testAPI()">Test API Endpoint</button>
+        <div id="api-test-result"></div>
+    </div>
+
+    <script>
+        console.log('Debug script loaded');
+
+        // Simple variables
+        var loadedImages = {};
+        var imageUrls = {};
+
+        // Check if functions are properly defined
+        function checkFunctions() {
+            var result = document.getElementById('function-check-result');
+            var functions = ['loadImage', 'showImageModal', 'showError'];
+            var status = [];
+            
+            functions.forEach(function(funcName) {
+                if (typeof window[funcName] === 'function') {
+                    status.push(funcName + ': ✅ Defined');
+                } else {
+                    status.push(funcName + ': ❌ Not defined');
+                }
+            });
+            
+            result.innerHTML = '<pre>' + status.join('\n') + '</pre>';
+        }
+
+        // Main image loading function
+        function loadImage(sequenceId) {
+            console.log('=== Loading image for sequence:', sequenceId, '===');
+            
+            // Check if already loaded
+            if (loadedImages[sequenceId]) {
+                console.log('Image already loaded, showing popup');
+                showImageModal(imageUrls[sequenceId], sequenceId);
+                return;
+            }
+            
+            // Get elements
+            var placeholder = document.getElementById('placeholder-' + sequenceId);
+            var spinner = document.getElementById('loading-' + sequenceId);
+            
+            console.log('Placeholder found:', !!placeholder);
+            console.log('Spinner found:', !!spinner);
+            
+            if (!placeholder || !spinner) {
+                console.error('Required elements not found for sequence', sequenceId);
+                document.getElementById('image-test-result').innerHTML = 
+                    '❌ Elements not found: placeholder=' + !!placeholder + ', spinner=' + !!spinner;
+                return;
+            }
+            
+            // Show loading
+            placeholder.style.display = 'none';
+            spinner.style.display = 'block';
+            
+            console.log('Starting fetch for sequence:', sequenceId);
+            document.getElementById('image-test-result').innerHTML = '🔄 Loading...';
+            
+            // Fetch image
+            fetch('/api/image/' + sequenceId + '/')
+                .then(function(response) {
+                    console.log('Fetch response status:', response.status);
+                    document.getElementById('image-test-result').innerHTML = 
+                        '📡 Response status: ' + response.status;
+                    
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.blob();
+                })
+                .then(function(blob) {
+                    console.log('Blob received, size:', blob.size, 'bytes');
+                    document.getElementById('image-test-result').innerHTML = 
+                        '📦 Blob received: ' + blob.size + ' bytes';
+                    
+                    if (blob.size === 0) {
+                        throw new Error('Empty image data');
+                    }
+                    
+                    // Create blob URL
+                    var imageUrl = URL.createObjectURL(blob);
+                    console.log('Blob URL created successfully');
+                    
+                    // Create image element
+                    var img = document.createElement('img');
+                    img.style.width = '50px';
+                    img.style.height = '35px';
+                    img.style.cursor = 'pointer';
+                    img.setAttribute('data-sequence', sequenceId);
+                    
+                    // Set up click handler
+                    img.onclick = function() { 
+                        console.log('Image clicked, showing modal');
+                        showImageModal(imageUrl, sequenceId); 
+                    };
+                    
+                    // Handle successful load
+                    img.onload = function() {
+                        console.log('Image element loaded successfully');
+                        
+                        // Hide spinner
+                        spinner.style.display = 'none';
+                        
+                        // Replace placeholder
+                        var container = placeholder.parentNode;
+                        container.removeChild(placeholder);
+                        container.appendChild(img);
+                        
+                        // Mark as loaded
+                        loadedImages[sequenceId] = true;
+                        imageUrls[sequenceId] = imageUrl;
+                        
+                        document.getElementById('image-test-result').innerHTML = 
+                            '✅ Image loaded successfully!';
+                        
+                        console.log('Image setup complete for sequence:', sequenceId);
+                    };
+                    
+                    // Handle load error
+                    img.onerror = function() {
+                        console.error('Image element failed to load');
+                        document.getElementById('image-test-result').innerHTML = 
+                            '❌ Image element failed to load';
+                        showError(sequenceId);
+                    };
+                    
+                    // Start loading
+                    img.src = imageUrl;
+                    
+                })
+                .catch(function(error) {
+                    console.error('Fetch error for sequence', sequenceId, ':', error);
+                    document.getElementById('image-test-result').innerHTML = 
+                        '❌ Error: ' + error.message;
+                    showError(sequenceId);
+                });
+        }
+
+        // Show error state
+        function showError(sequenceId) {
+            var placeholder = document.getElementById('placeholder-' + sequenceId);
+            var spinner = document.getElementById('loading-' + sequenceId);
+            
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+            
+            if (placeholder) {
+                placeholder.innerHTML = '⚠️';
+                placeholder.style.background = '#e74c3c';
+                placeholder.style.color = 'white';
+                placeholder.style.display = 'flex';
+                placeholder.onclick = null;
+            }
+        }
+
+        // Show image in popup
+        function showImageModal(imageUrl, sequenceId) {
+            console.log('Opening popup for sequence:', sequenceId);
+            
+            var popup = window.open('', 'ImageViewer_' + sequenceId, 'width=600,height=500,resizable=yes,scrollbars=yes');
+            
+            if (!popup) {
+                alert('পপআপ ব্লক করা হয়েছে! ব্রাউজারের পপআপ ব্লকার বন্ধ করুন।');
+                return;
+            }
+            
+            var htmlContent = '<!DOCTYPE html><html><head><title>Vehicle Image - ' + sequenceId + '</title>';
+            htmlContent += '<style>body { margin: 0; padding: 20px; background: #667eea; text-align: center; }</style>';
+            htmlContent += '</head><body>';
+            htmlContent += '<h3>Vehicle Image - Sequence ' + sequenceId + '</h3>';
+            htmlContent += '<img src="' + imageUrl + '" style="max-width: 100%; max-height: 70vh;" alt="Vehicle Image">';
+            htmlContent += '<br><button onclick="window.close()" style="margin-top: 15px; padding: 8px 16px;">Close</button>';
+            htmlContent += '</body></html>';
+            
+            popup.document.write(htmlContent);
+            popup.document.close();
+            popup.focus();
+        }
+
+        // Test API endpoint
+        function testAPI() {
+            document.getElementById('api-test-result').innerHTML = '🔄 Testing API...';
+            
+            fetch('/api/image/496B3/')
+                .then(function(response) {
+                    document.getElementById('api-test-result').innerHTML = 
+                        '📡 API Response: ' + response.status + ' (' + response.statusText + ')';
+                    return response.blob();
+                })
+                .then(function(blob) {
+                    document.getElementById('api-test-result').innerHTML += 
+                        '<br>📦 Blob size: ' + blob.size + ' bytes';
+                })
+                .catch(function(error) {
+                    document.getElementById('api-test-result').innerHTML = 
+                        '❌ API Error: ' + error.message;
+                });
+        }
+
+        // Auto-run function check on load
+        window.addEventListener('load', function() {
+            console.log('Debug page loaded');
+            setTimeout(checkFunctions, 500);
+        });
+    </script>
+</body>
+</html> 

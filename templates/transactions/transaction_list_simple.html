@@ -211,8 +211,8 @@
     }
     
     .back-button:hover {
-        background: #3498db;
-        transform: scale(1.1);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(52, 152, 219, 0.4);
     }
     
     .no-results {
@@ -247,6 +247,63 @@
             height: 50px;
             font-size: 1.2rem;
         }
+    }
+    
+    /* Image Styles */
+    .image-container {
+        text-align: center;
+        width: 80px;
+    }
+    
+    .vehicle-image {
+        width: 70px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .vehicle-image:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .image-placeholder {
+        width: 70px;
+        height: 50px;
+        background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        margin: 0 auto;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px dashed rgba(255, 255, 255, 0.5);
+    }
+    
+    .image-placeholder:hover {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        transform: scale(1.05);
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 15px auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
@@ -327,6 +384,7 @@
                             <th><i class="fa fa-credit-card"></i> Payment</th>
                             <th><i class="fa fa-money-bill"></i> Fare</th>
                             <th><i class="fa fa-user"></i> Collector</th>
+                            <th><i class="fa fa-image"></i> Image</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -366,6 +424,14 @@
                             </td>
                             <td>
                                 {{ transaction.collectorid|default:"N/A" }}
+                            </td>
+                            <td>
+                                <div class="image-container">
+                                    <div class="loading-spinner" id="loading-{{ transaction.sequence }}" style="display: none;"></div>
+                                    <div class="image-placeholder" id="placeholder-{{ transaction.sequence }}" onclick="loadImage('{{ transaction.sequence }}')">
+                                        <i class="fa fa-camera"></i>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -449,16 +515,209 @@
 
 {% block extra_js %}
 <script>
+// Simple and reliable image loading system
+var loadedImages = {};
+var imageUrls = {};
+
 // Pagination function
 function goToPage(pageNumber) {
     document.getElementById('pageInput').value = pageNumber;
     document.getElementById('paginationForm').submit();
 }
 
-// Performance monitoring
+function loadImage(sequenceId) {
+    console.log('Loading image for sequence: ' + sequenceId);
+    
+    // If already loaded, show popup
+    if (loadedImages[sequenceId]) {
+        console.log('Image already loaded, showing popup');
+        showImageModal(imageUrls[sequenceId], sequenceId);
+        return;
+    }
+    
+    var placeholder = document.getElementById('placeholder-' + sequenceId);
+    var spinner = document.getElementById('loading-' + sequenceId);
+    
+    if (!placeholder || !spinner) {
+        console.error('Elements not found for sequence ' + sequenceId);
+        return;
+    }
+    
+    // Show loading
+    placeholder.style.display = 'none';
+    spinner.style.display = 'block';
+    
+    // Fetch image
+    fetch('/api/image/' + sequenceId + '/')
+        .then(function(response) {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.blob();
+        })
+        .then(function(blob) {
+            console.log('Blob size:', blob.size);
+            if (blob.size === 0) {
+                throw new Error('Empty image');
+            }
+            
+            var imageUrl = URL.createObjectURL(blob);
+            console.log('Created image URL');
+            
+            // Create image element
+            var img = document.createElement('img');
+            img.src = imageUrl;
+            img.className = 'vehicle-image';
+            img.setAttribute('data-sequence', sequenceId);
+            img.onclick = function() { 
+                showImageModal(imageUrl, sequenceId); 
+            };
+            
+            img.onload = function() {
+                console.log('Image element loaded successfully');
+                
+                // Hide spinner
+                spinner.style.display = 'none';
+                
+                // Replace placeholder
+                var container = placeholder.parentNode;
+                container.removeChild(placeholder);
+                container.appendChild(img);
+                
+                // Mark as loaded
+                loadedImages[sequenceId] = true;
+                imageUrls[sequenceId] = imageUrl;
+                
+                console.log('Image setup complete for ' + sequenceId);
+            };
+            
+            img.onerror = function() {
+                console.error('Image element failed to load');
+                showError(sequenceId, 'Image load failed');
+            };
+            
+        })
+        .catch(function(error) {
+            console.error('Fetch error:', error);
+            showError(sequenceId, error.message);
+        });
+}
+
+function showError(sequenceId, message) {
+    var placeholder = document.getElementById('placeholder-' + sequenceId);
+    var spinner = document.getElementById('loading-' + sequenceId);
+    
+    if (spinner) spinner.style.display = 'none';
+    if (placeholder) {
+        placeholder.innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
+        placeholder.style.background = '#e74c3c';
+        placeholder.style.color = 'white';
+        placeholder.style.display = 'flex';
+        placeholder.onclick = null;
+    }
+}
+
+function showImageModal(imageUrl, sequenceId) {
+    console.log('Opening popup for sequence:', sequenceId);
+    
+    var popup = window.open('', 'ImageViewer_' + sequenceId, 'width=600,height=500,resizable=yes,scrollbars=yes');
+    
+    if (!popup) {
+        alert('পপআপ ব্লক করা হয়েছে! ব্রাউজারের পপআপ ব্লকার বন্ধ করুন।');
+        return;
+    }
+    
+    popup.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Vehicle Image - ${sequenceId}</title>
+            <style>
+                body { 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: #667eea; 
+                    font-family: Arial; 
+                    text-align: center;
+                }
+                .container {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    max-width: 100%;
+                }
+                img { 
+                    max-width: 100%; 
+                    max-height: 70vh; 
+                    border-radius: 5px;
+                }
+                .controls {
+                    margin-top: 15px;
+                }
+                button {
+                    margin: 5px;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                .btn-primary { background: #3498db; color: white; }
+                .btn-danger { background: #e74c3c; color: white; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h3>Vehicle Image - Sequence ${sequenceId}</h3>
+                <img src="${imageUrl}" alt="Vehicle Image">
+                <div class="controls">
+                    <button class="btn-primary" onclick="downloadImage()">Download</button>
+                    <button class="btn-danger" onclick="window.close()">Close</button>
+                </div>
+            </div>
+            <script>
+                function downloadImage() {
+                    var a = document.createElement('a');
+                    a.href = '${imageUrl}';
+                    a.download = 'vehicle_${sequenceId}.jpg';
+                    a.click();
+                }
+            </script>
+        </body>
+        </html>
+    `);
+    
+    popup.document.close();
+    popup.focus();
+}
+
+// Auto-load visible images when page loads
 window.addEventListener('load', function() {
-    const loadTime = performance.now();
-    console.log(`Transaction list loaded in ${Math.round(loadTime)}ms`);
+    console.log('Page loaded, checking for visible images...');
+    
+    var placeholders = document.querySelectorAll('.image-placeholder');
+    for (var i = 0; i < placeholders.length; i++) {
+        var placeholder = placeholders[i];
+        var sequenceId = placeholder.id.replace('placeholder-', '');
+        
+        // Check if visible
+        var rect = placeholder.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            console.log('Auto-loading visible image:', sequenceId);
+            setTimeout(function(seq) {
+                return function() { loadImage(seq); };
+            }(sequenceId), i * 200); // Stagger the requests
+        }
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    for (var sequenceId in imageUrls) {
+        if (imageUrls[sequenceId].startsWith('blob:')) {
+            URL.revokeObjectURL(imageUrls[sequenceId]);
+        }
+    }
 });
 </script>
 {% endblock %} 

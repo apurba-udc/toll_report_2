@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 
 app_name = 'transactions'
 
@@ -28,4 +29,7 @@ urlpatterns = [
     
     # API endpoints
     path('api/image/<str:transaction_id>/', views.get_image_view, name='get_image'),
+    
+    # Test page
+    path('test-images/', TemplateView.as_view(template_name='test_images.html'), name='test_images'),
 ] 

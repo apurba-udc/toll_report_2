@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status Check - টোল সিস্টেম</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #27ae60;
+        }
+        .btn-success:hover {
+            background: #2ecc71;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .server-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 টোল সিস্টেম</h1>
+        <h2>Server Status Check</h2>
+        
+        <div id="status-result">
+            <div class="status loading">
+                Server status পরীক্ষা করা হচ্ছে...
+            </div>
+        </div>
+
+        <button class="btn" onclick="checkServer()">🔄 আবার পরীক্ষা করুন</button>
+        
+        <div id="server-info" class="server-info" style="display: none;">
+            <strong>Server Information:</strong><br>
+            URL: <span id="server-url"></span><br>
+            Status: <span id="server-status"></span><br>
+            Response Time: <span id="response-time"></span><br>
+            Timestamp: <span id="timestamp"></span>
+        </div>
+
+        <div id="action-buttons" style="display: none;">
+            <a href="http://127.0.0.1:8888/" class="btn btn-success" target="_blank">
+                🏠 Home Page এ যান
+            </a>
+            <a href="http://127.0.0.1:8888/daily_report/" class="btn btn-success" target="_blank">
+                📊 Daily Report এ যান
+            </a>
+            <a href="debug_images.html" class="btn" target="_blank">
+                🖼️ Image Test করুন
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function checkServer() {
+            const statusDiv = document.getElementById('status-result');
+            const serverInfo = document.getElementById('server-info');
+            const actionButtons = document.getElementById('action-buttons');
+            
+            statusDiv.innerHTML = '<div class="status loading">Server status পরীক্ষা করা হচ্ছে...</div>';
+            serverInfo.style.display = 'none';
+            actionButtons.style.display = 'none';
+            
+            const startTime = Date.now();
+            const serverUrl = 'http://127.0.0.1:8888/';
+            
+            fetch(serverUrl)
+                .then(response => {
+                    const endTime = Date.now();
+                    const responseTime = endTime - startTime;
+                    
+                    console.log('Server response:', response.status, response.statusText);
+                    
+                    if (response.ok) {
+                        statusDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ সার্ভার সফলভাবে চালু আছে!<br>
+                                <small>HTTP ${response.status} - ${response.statusText}</small>
+                            </div>
+                        `;
+                        
+                        // Show server info
+                        document.getElementById('server-url').textContent = serverUrl;
+                        document.getElementById('server-status').textContent = `${response.status} ${response.statusText}`;
+                        document.getElementById('response-time').textContent = `${responseTime}ms`;
+                        document.getElementById('timestamp').textContent = new Date().toLocaleString('bn-BD');
+                        
+                        serverInfo.style.display = 'block';
+                        actionButtons.style.display = 'block';
+                        
+                    } else {
+                        statusDiv.innerHTML = `
+                            <div class="status error">
+                                ❌ সার্ভার error: HTTP ${response.status}<br>
+                                <small>${response.statusText}</small>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Server connection error:', error);
+                    
+                    let errorMessage = 'Unknown error';
+                    if (error.message.includes('Failed to fetch')) {
+                        errorMessage = 'সার্ভার বন্ধ আছে বা সংযোগ সমস্যা';
+                    } else if (error.message.includes('NetworkError')) {
+                        errorMessage = 'নেটওয়ার্ক সমস্যা';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                    
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ সার্ভার সংযোগ ব্যর্থ<br>
+                            <small>${errorMessage}</small><br><br>
+                            <strong>সমাধান:</strong><br>
+                            1. Terminal এ যান<br>
+                            2. <code>.\venv\bin\activate</code> চালান<br>
+                            3. <code>python manage.py runserver 127.0.0.1:8888</code> চালান
+                        </div>
+                    `;
+                });
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, checking server status...');
+            checkServer();
+        });
+    </script>
+</body>
+</html> 

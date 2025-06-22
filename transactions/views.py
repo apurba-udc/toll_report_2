@@ -148,7 +148,7 @@ def daily_report(request):
             'title': 'Daily Transaction Report'
         }
         
-        return render(request, 'transactions/transaction_list_simple.html', context)
+        return render(request, 'transactions/daily_report.html', context)
     
     return render(request, 'transactions/report_date.html')
 
@@ -534,22 +534,46 @@ def exempt_report(request):
 def get_image_view(request, transaction_id):
     """Get transaction image - serves binary image data directly for AJAX requests"""
     try:
+        print(f"Image request for transaction: {transaction_id}")
+        
         # Handle duplicate sequences by getting the first one with image
         transaction = Transaction.objects.filter(
             sequence=transaction_id,
             pic__isnull=False
         ).first()
         
+        print(f"Found transaction: {transaction is not None}")
+        
         if transaction and transaction.pic:
-            # Return image as HTTP response with proper content type
+            image_size = len(transaction.pic)
+            print(f"Image size: {image_size} bytes")
+            
+            # Check if it's a valid JPEG
+            is_jpeg = transaction.pic.startswith(b'\xff\xd8\xff')
+            print(f"Is JPEG: {is_jpeg}")
+            
+            # Return image as HTTP response with proper content type and headers
             response = HttpResponse(transaction.pic, content_type='image/jpeg')
             response['Content-Disposition'] = f'inline; filename="vehicle_{transaction_id}.jpg"'
+            response['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+            response['Access-Control-Allow-Origin'] = '*'  # Allow CORS
+            response['Access-Control-Allow-Methods'] = 'GET'
+            response['Access-Control-Allow-Headers'] = 'Content-Type'
+            response['Content-Length'] = str(image_size)
+            
+            print(f"Returning image response with {image_size} bytes")
             return response
         else:
+            print(f"No image found for transaction: {transaction_id}")
             # Return 404 if no image found
-            return HttpResponse('Image not found', status=404)
+            response = HttpResponse('Image not found', status=404)
+            response['Access-Control-Allow-Origin'] = '*'
+            return response
     except Exception as e:
-        return HttpResponse(f'Error: {str(e)}', status=500)
+        print(f"Error loading image for transaction {transaction_id}: {str(e)}")
+        response = HttpResponse(f'Error: {str(e)}', status=500)
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
 
 
 # Helper functions for class and exempt reports

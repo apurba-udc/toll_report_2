@@ -37,6 +37,53 @@
             padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background Elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            animation: gradientShift 8s ease-in-out infinite;
+            z-index: -2;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 60% 10%, rgba(255, 255, 255, 0.1) 0%, transparent 30%),
+                radial-gradient(circle at 10% 60%, rgba(52, 152, 219, 0.2) 0%, transparent 40%);
+            animation: gradientShift 12s ease-in-out infinite reverse;
+            z-index: -1;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 0.3;
+            }
+            33% { 
+                transform: scale(1.1) rotate(120deg);
+                opacity: 0.5;
+            }
+            66% { 
+                transform: scale(0.9) rotate(240deg);
+                opacity: 0.4;
+            }
         }
         
         /* Optimized loading states */
@@ -57,105 +104,192 @@
             transition: all 0.3s ease;
         }
         
-        /* Top Navigation Bar */
-        .navbar {
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-            height: 70px;
-            z-index: 1040;
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            color: #333 !important;
-        }
-        
-        #sidebarToggle {
-            border: 2px solid #007bff;
-            color: #007bff;
-            background: transparent;
-            transition: all 0.3s ease;
-            font-size: 1.5rem;
-            padding: 1rem 1.2rem;
-            margin-left: 0.5vw;
-            margin-right: 1rem;
-        }
-        
-        #sidebarToggle:hover {
-            background: #007bff;
-            color: white;
-        }
-        
-        /* Sidebar Navigation */
-        .sidebar {
+        /* Fixed Sidebar Menu - 25% width, 100% height */
+        .fixed-sidebar {
             position: fixed;
             top: 0;
-            left: -300px;
-            width: 300px;
+            left: -25vw;
+            width: 25vw;
             height: 100vh;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            transition: left 0.3s ease;
-            z-index: 1050;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            z-index: 1090;
+            transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
         }
         
-        .sidebar.show {
+        .fixed-sidebar.show {
             left: 0;
         }
         
+        .fixed-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
+            animation: gradientShift 10s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { 
+                opacity: 0.2;
+                transform: scale(1) rotate(0deg);
+            }
+            50% { 
+                opacity: 0.4;
+                transform: scale(1.05) rotate(180deg);
+            }
+        }
+        
+        /* Sidebar Header */
         .sidebar-header {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding: 2rem 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1;
         }
         
-        .sidebar-header h4 {
+        .sidebar-header h2 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            font-weight: 700;
             margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .sidebar-header h2 i {
+            color: #ffffff;
             font-size: 1.2rem;
-            color: #ecf0f1;
         }
         
-        .sidebar-content {
-            padding: 20px 0;
-        }
-        
-        .sidebar .nav-link {
-            color: #bdc3c7 !important;
-            padding: 12px 20px;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-        
-        .sidebar .nav-link:hover {
-            background: rgba(52, 152, 219, 0.2);
-            color: #3498db !important;
-            border-left-color: #3498db;
-        }
-        
-        .sidebar .nav-link.active {
-            background: rgba(52, 152, 219, 0.3);
-            color: #3498db !important;
-            border-left-color: #3498db;
-        }
-        
-        .sidebar-heading {
-            color: #ecf0f1 !important;
+        .sidebar-header p {
+            margin: 0.5rem 0 0 0;
+            color: #ffffff;
             font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Close Button */
+        .sidebar-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(220, 53, 69, 0.2);
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 1095;
+        }
+        
+        .sidebar-close:hover {
+            background: #dc3545;
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        /* Sidebar Content */
+        .sidebar-content {
+            position: relative;
+            padding: 1rem 0;
+            z-index: 1;
+        }
+        
+        .menu-section {
+            margin-bottom: 2rem;
+            padding: 0 1.5rem;
+        }
+        
+        .menu-section h3 {
+            color: #ffffff;
+            font-size: 1rem;
             font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin: 20px 20px 10px 20px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        .sidebar .nav-item .nav-item .nav-link {
-            padding: 8px 20px 8px 40px;
+        .menu-section h3 i {
+            color: #ffffff;
             font-size: 0.9rem;
+            opacity: 0.9;
         }
+        
+        .menu-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .menu-links li {
+            margin-bottom: 0.3rem;
+        }
+        
+        .menu-links a {
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            opacity: 0.9;
+        }
+        
+        .menu-links a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-left-color: #ffffff;
+            transform: translateX(5px);
+            opacity: 1;
+        }
+        
+        .menu-links a.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-left-color: #ffffff;
+            opacity: 1;
+        }
+        
+        .menu-links a i {
+            width: 18px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .menu-links a:hover i,
+        .menu-links a.active i {
+            opacity: 1;
+        }
+        
+
         
         /* Sidebar Overlay */
         .sidebar-overlay {
@@ -165,7 +299,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1045;
+            z-index: 1085;
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -178,9 +312,172 @@
         
         /* Content area */
         .content-wrapper {
-            min-height: calc(100vh - 70px);
+            min-height: 100vh;
             padding: 2rem 0;
-            margin-top: 70px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Floating Animation Elements */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-circle:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 8s;
+        }
+        
+        .floating-circle:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+            animation-duration: 10s;
+        }
+        
+        .floating-circle:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+            animation-duration: 12s;
+        }
+        
+        .floating-circle:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            right: 30%;
+            animation-delay: 1s;
+            animation-duration: 9s;
+        }
+        
+        .floating-circle:nth-child(5) {
+            width: 40px;
+            height: 40px;
+            top: 10%;
+            right: 10%;
+            animation-delay: 3s;
+            animation-duration: 7s;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.6;
+            }
+        }
+        
+        /* Particle Animation */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: particleFloat 15s linear infinite;
+        }
+        
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 6s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 8s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 10s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 12s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 14s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 1s; }
+        .particle:nth-child(10) { left: 15%; animation-delay: 3s; }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Wave Animation */
+        .wave-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(52, 152, 219, 0.2) 50%, 
+                rgba(255, 255, 255, 0.1) 100%);
+            border-radius: 50% 50% 0 0;
+            animation: waveMove 8s ease-in-out infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: 2s;
+            opacity: 0.5;
+            animation-duration: 10s;
+        }
+        
+        @keyframes waveMove {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0px);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
         }
         
         /* Footer */
@@ -194,6 +491,11 @@
         
         /* Responsive optimizations */
         @media (max-width: 768px) {
+            .fixed-sidebar {
+                width: 80vw;
+                left: -80vw;
+            }
+            
             .content-wrapper {
                 padding: 1rem 0;
             }
@@ -201,6 +503,46 @@
             .container-fluid {
                 padding-left: 0.5rem;
                 padding-right: 0.5rem;
+            }
+            
+            .menu-section {
+                padding: 0 1rem;
+            }
+            
+            .sidebar-header {
+                padding: 1.5rem 1rem;
+            }
+            
+            .sidebar-header h2 {
+                font-size: 1.1rem;
+            }
+            
+            #menuToggle {
+                top: 15px;
+                left: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+                padding: 0;
+                border-width: 2px;
+                box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            }
+            
+            #menuToggle:hover {
+                transform: scale(1.03);
+                box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
+            }
+            
+            #menuToggle.active {
+                transform: scale(1.05);
+                box-shadow: 0 6px 25px rgba(220, 53, 69, 0.4);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .fixed-sidebar {
+                width: 90vw;
+                left: -90vw;
             }
         }
         
@@ -241,6 +583,66 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        /* Menu Toggle Button */
+        #menuToggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            border: 3px solid #007bff;
+            color: #007bff;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            padding: 0;
+            z-index: 1070;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 25px rgba(0, 123, 255, 0.3);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        #menuToggle:hover {
+            background: #007bff;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.5);
+        }
+        
+        #menuToggle.active {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(220, 53, 69, 0.5);
+        }
+        
+        #menuToggle:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
+        }
+        
+        /* Pulse Animation for Menu Button */
+        @keyframes menuPulse {
+            0% {
+                box-shadow: 0 6px 25px rgba(0, 123, 255, 0.3), 0 0 0 0 rgba(0, 123, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 6px 25px rgba(0, 123, 255, 0.3), 0 0 0 10px rgba(0, 123, 255, 0);
+            }
+            100% {
+                box-shadow: 0 6px 25px rgba(0, 123, 255, 0.3), 0 0 0 0 rgba(0, 123, 255, 0);
+            }
+        }
+        
+        #menuToggle:not(.active):not(:hover) {
+            animation: menuPulse 2s infinite;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -251,110 +653,107 @@
         <i class="fa fa-tachometer-alt"></i> Optimized
     </div>
 
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-light fixed-top">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-outline-primary me-3" type="button" id="sidebarToggle">
-                    <i class="fa fa-bars"></i>
-                </button>
-                <a class="navbar-brand" href="{% url 'transactions:overview' %}">
-                    <i class="fa fa-chart-bar"></i> Toll Reporting System
-                </a>
-            </div>
-        </div>
-    </nav>
+    <!-- Menu Toggle Button Only -->
+    <button class="btn btn-outline-primary" type="button" id="menuToggle">
+        <i class="fa fa-bars"></i>
+    </button>
 
-    <!-- Sidebar Navigation -->
-    <div class="sidebar" id="sidebar">
+    <!-- Fixed Sidebar Menu - 25% Width, 100% Height -->
+    <div class="fixed-sidebar" id="fixedSidebar">
+        <!-- Close Button -->
+        <button class="sidebar-close" id="sidebarClose">
+            <i class="fa fa-times"></i>
+        </button>
+        
+        <!-- Sidebar Header -->
         <div class="sidebar-header">
-            <h4><i class="fa fa-chart-bar"></i> Toll Reporting System</h4>
+            <h2><i class="fa fa-chart-bar"></i> Toll System</h2>
+            <p>Transaction Management & Analytics</p>
         </div>
+        
+        <!-- Sidebar Content -->
         <div class="sidebar-content">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'transactions:overview' %}">
-                        <i class="fa fa-home"></i> Overview
-                    </a>
-                </li>
-                
-                <!-- Transaction Reports Section -->
-                <li class="nav-item">
-                    <h6 class="sidebar-heading">
-                        <i class="fa fa-chart-line"></i> Transaction Reports
-                    </h6>
-                    <ul class="nav flex-column ms-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'transactions:report_date' %}">
-                                <i class="fa fa-calendar"></i> Transaction Details
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'transactions:report_date_lane' %}">
-                                <i class="fa fa-road"></i> Selected Transaction Details
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                
-                <!-- Summary Reports Section -->
-                <li class="nav-item">
-                    <h6 class="sidebar-heading">
-                        <i class="fa fa-chart-bar"></i> Summary Reports
-                    </h6>
-                    <ul class="nav flex-column ms-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'transactions:summary_brief' %}">
-                                <i class="fa fa-money-bill"></i> Revenue Summary (Cash Only)
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'transactions:summary_detail' %}">
-                                <i class="fa fa-car"></i> Traffic Summary (Cash Only)
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'transactions:exempt_details' %}">
-                                <i class="fa fa-ban"></i> Traffic Summary (Exempt Only)
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                
-                <!-- Additional Features Section -->
-                <li class="nav-item">
-                    <h6 class="sidebar-heading">
-                        <i class="fa fa-cog"></i> More Options
-                    </h6>
-                    <ul class="nav flex-column ms-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'transactions:transaction_list' %}">
-                                <i class="fa fa-list"></i> Transaction List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/">
-                                <i class="fa fa-user-shield"></i> Admin Panel
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/logout/">
-                                <i class="fa fa-sign-out-alt"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+            <!-- Main Navigation -->
+            <div class="menu-section">
+                <h3><i class="fa fa-home"></i> Main Navigation</h3>
+                <ul class="menu-links">
+                    <li><a href="{% url 'transactions:overview' %}"><i class="fa fa-tachometer-alt"></i> Dashboard Overview</a></li>
+                    <li><a href="{% url 'transactions:transaction_list' %}"><i class="fa fa-list"></i> All Transactions</a></li>
+                    <li><a href="/admin/"><i class="fa fa-user-shield"></i> Admin Panel</a></li>
+                </ul>
+            </div>
+            
+            <!-- Transaction Reports -->
+            <div class="menu-section">
+                <h3><i class="fa fa-chart-line"></i> Transaction Reports</h3>
+                <ul class="menu-links">
+                    <li><a href="{% url 'transactions:report_date' %}"><i class="fa fa-calendar-day"></i> Daily Transaction Report</a></li>
+                    <li><a href="{% url 'transactions:report_date_lane' %}"><i class="fa fa-road"></i> Lane-wise Analysis</a></li>
+                    <li><a href="{% url 'transactions:exempt_details' %}"><i class="fa fa-ban"></i> Exempt Transactions</a></li>
+                </ul>
+            </div>
+            
+            <!-- Analytics & Summary -->
+            <div class="menu-section">
+                <h3><i class="fa fa-chart-bar"></i> Analytics & Summary</h3>
+                <ul class="menu-links">
+                    <li><a href="{% url 'transactions:summary_brief' %}"><i class="fa fa-money-bill-wave"></i> Revenue Summary</a></li>
+                    <li><a href="{% url 'transactions:summary_detail' %}"><i class="fa fa-car"></i> Traffic Analysis</a></li>
+                    <li><a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); document.getElementById('fixedSidebar').classList.remove('show'); document.getElementById('menuToggle').classList.remove('active'); document.getElementById('sidebarOverlay').classList.remove('show');"><i class="fa fa-arrow-up"></i> Back to Top</a></li>
+                </ul>
+            </div>
+            
+            <!-- System & Settings -->
+            <div class="menu-section">
+                <h3><i class="fa fa-cog"></i> System & Settings</h3>
+                <ul class="menu-links">
+                    <li><a href="/admin/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+                    <li><a href="#" onclick="window.print()"><i class="fa fa-print"></i> Print Current Page</a></li>
+                    <li><a href="#" onclick="location.reload()"><i class="fa fa-refresh"></i> Refresh Page</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Floating Animation Elements -->
+    <div class="floating-elements">
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+    </div>
+
+    <!-- Particle Animation -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Wave Animation -->
+    <div class="wave-container">
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
     <!-- Main Content -->
     <div class="content-wrapper">
         {% block content %}{% endblock %}
     </div>
+
+    <!-- Floating Navigation -->
+    {% include 'floating_nav.html' %}
 
     <!-- Footer -->
     <footer class="footer">
@@ -371,43 +770,69 @@
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
     
-    <!-- Sidebar Toggle Script -->
+    <!-- Fixed Sidebar Menu Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            const fixedSidebar = document.getElementById('fixedSidebar');
+            const sidebarClose = document.getElementById('sidebarClose');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             
             // Toggle sidebar function
             function toggleSidebar() {
-                sidebar.classList.toggle('show');
-                sidebarOverlay.classList.toggle('show');
+                const isOpen = fixedSidebar.classList.contains('show');
+                if (isOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            }
+            
+            // Open sidebar function
+            function openSidebar() {
+                fixedSidebar.classList.add('show');
+                sidebarOverlay.classList.add('show');
+                menuToggle.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // Change toggle button icon
+                const icon = menuToggle.querySelector('i');
+                icon.className = 'fa fa-times';
             }
             
             // Close sidebar function
             function closeSidebar() {
-                sidebar.classList.remove('show');
+                fixedSidebar.classList.remove('show');
                 sidebarOverlay.classList.remove('show');
+                menuToggle.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // Change toggle button icon back
+                const icon = menuToggle.querySelector('i');
+                icon.className = 'fa fa-bars';
             }
             
             // Toggle sidebar when clicking the toggle button
-            sidebarToggle.addEventListener('click', toggleSidebar);
+            menuToggle.addEventListener('click', toggleSidebar);
+            
+            // Close sidebar when clicking the close button
+            sidebarClose.addEventListener('click', closeSidebar);
             
             // Close sidebar when clicking the overlay
             sidebarOverlay.addEventListener('click', closeSidebar);
             
             // Close sidebar when pressing Escape key
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                if (e.key === 'Escape' && fixedSidebar.classList.contains('show')) {
                     closeSidebar();
                 }
             });
             
-            // Close sidebar when clicking on a navigation link (mobile behavior)
-            document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    // On mobile devices, close sidebar after navigation
-                    if (window.innerWidth <= 768) {
+            // Close sidebar when clicking on a navigation link
+            document.querySelectorAll('.menu-links a').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    // Don't close for javascript: links or # links
+                    if (!this.href.includes('javascript:') && !this.href.endsWith('#')) {
                         setTimeout(closeSidebar, 150);
                     }
                 });
@@ -415,14 +840,14 @@
             
             // Handle window resize
             window.addEventListener('resize', function() {
-                if (window.innerWidth > 768 && sidebar.classList.contains('show')) {
-                    closeSidebar();
+                if (window.innerWidth > 768 && fixedSidebar.classList.contains('show')) {
+                    // Keep sidebar behavior consistent
                 }
             });
             
             // Add active class to current page link
             const currentPath = window.location.pathname;
-            document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            document.querySelectorAll('.menu-links a').forEach(function(link) {
                 if (link.getAttribute('href') === currentPath) {
                     link.classList.add('active');
                 }

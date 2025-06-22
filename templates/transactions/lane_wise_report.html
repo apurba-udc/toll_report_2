@@ -1,192 +1,265 @@
 {% extends 'base.html' %}
 {% load image_filters %}
 
-{% block title %}Revenue Summary (Cash Only) - Toll Report System{% endblock %}
+{% block title %}Revenue Summary (Cash Only) - Toll Management System{% endblock %}
 
 {% block extra_css %}
 <style>
-    .report-header {
+    .page-container {
         background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-        color: white;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .report-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
         padding: 2rem;
-        border-radius: 10px;
         margin-bottom: 2rem;
         text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
+    
     .report-title {
-        font-size: 2.5rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #27ae60;
+        margin-bottom: 1rem;
     }
-    .report-subtitle {
-        font-size: 1.8rem;
-        margin-bottom: 0.5rem;
+    
+    .report-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
     }
-    .report-period {
-        font-size: 1.2rem;
-        opacity: 0.9;
+    
+    .stat-item {
+        text-align: center;
     }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2ecc71;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
     .summary-table {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
         overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
     }
-    .summary-table th {
-        background: #2ecc71;
+    
+    .table {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .table thead th {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
         color: white;
+        border: none;
+        padding: 0.8rem 0.5rem;
         font-weight: 600;
-        border: none;
-        padding: 1rem 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-size: 0.8rem;
         text-align: center;
     }
-    .summary-table td {
-        padding: 0.75rem;
-        border: none;
-        border-bottom: 1px solid #e9ecef;
-        text-align: center;
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(46, 204, 113, 0.1);
+    }
+    
+    .table tbody td {
+        padding: 0.6rem 0.4rem;
         vertical-align: middle;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        text-align: center;
     }
-    .summary-table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-    .total-row {
-        background: #e8f5e8 !important;
-        font-weight: bold;
-    }
-    .total-row td {
-        border-top: 2px solid #2ecc71;
-    }
+    
     .lane-badge {
         background: #2ecc71;
         color: white;
-        padding: 0.3rem 0.8rem;
-        border-radius: 15px;
+        padding: 0.2rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    
+    .revenue-amount {
+        font-weight: 700;
+        color: #27ae60;
         font-size: 0.9rem;
     }
+    
+    .count-value {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.9rem;
+    }
+    
     .back-button {
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 25px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
-    }
-    .back-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-    .stats-card {
-        background: white;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    .stats-row {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-    .stat-item {
-        flex: 1;
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        position: fixed;
+        top: 100px;
+        left: 20px;
+        background: rgba(46, 204, 113, 0.9);
         color: white;
-        padding: 1rem;
-        border-radius: 10px;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .back-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);
+    }
+    
+    .no-results {
         text-align: center;
+        padding: 3rem 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        margin: 2rem 0;
     }
-    .stat-value {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
+    
+    .no-results-icon {
+        font-size: 3rem;
+        color: #95a5a6;
+        margin-bottom: 1rem;
     }
-    .stat-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
+    
+    @media (max-width: 768px) {
+        .report-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.7rem;
+        }
+        
+        .back-button {
+            top: 80px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="report-header">
-        <div class="report-title">Revenue Summary Report</div>
-        <div class="report-subtitle">Cash Transactions Only</div>
-        <div class="report-period">
-            <i class="fa fa-calendar" aria-hidden="true"></i>
-            {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
-        </div>
-    </div>
+<div class="page-container">
+    <div class="container">
+        <!-- Back Button -->
+        <button class="back-button" onclick="window.location.href='{% url 'transactions:summary_brief' %}'">
+            <i class="fa fa-arrow-left"></i>
+        </button>
 
-    {% if laneWise %}
-    <!-- Summary Statistics -->
-    <div class="stats-row">
-        <div class="stat-item">
-            <div class="stat-value">{{ laneWise|length }}</div>
-            <div class="stat-label">Active Lanes</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">
-                {% for lane in laneWise %}{{ lane.transaction_count|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="report-title">
+                <i class="fa fa-money-bill"></i> Revenue Summary Report
+            </h1>
+            
+            <div class="report-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ laneWise|length|default:0 }}</div>
+                    <div class="stat-label">Active Lanes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">
+                        {% for lane in laneWise %}{{ lane.transaction_count|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                    </div>
+                    <div class="stat-label">Total Transactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ start_date }}</div>
+                    <div class="stat-label">Date</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">
+                        ৳{% for lane in laneWise %}{{ lane.total_fare|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                    </div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
             </div>
-            <div class="stat-label">Total Transactions</div>
         </div>
-        <div class="stat-item">
-            <div class="stat-value">
-                ৳{% for lane in laneWise %}{{ lane.total_fare|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
-            </div>
-            <div class="stat-label">Total Revenue</div>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="summary-table">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th><i class="fa fa-road"></i> Lane</th>
-                                <th><i class="fa fa-list-ol"></i> Transaction Count</th>
-                                <th><i class="fa fa-money"></i> Total Revenue</th>
-                                <th><i class="fa fa-calculator"></i> Average Fare</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for lane in laneWise %}
-                            <tr>
-                                <td><span class="lane-badge">{{ lane.lane|default:"N/A" }}</span></td>
-                                <td><strong>{{ lane.transaction_count|default:0 }}</strong></td>
-                                <td><strong>৳{{ lane.total_fare|format_currency }}</strong></td>
-                                <td>
+        <!-- Summary Table -->
+        {% if laneWise %}
+        <div class="summary-table">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Lane</th>
+                            <th>Transactions</th>
+                            <th>Total Revenue</th>
+                            <th>Average Fare</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lane in laneWise %}
+                        <tr>
+                            <td>
+                                <span class="lane-badge">{{ lane.lane|default:"N/A" }}</span>
+                            </td>
+                            <td>
+                                <span class="count-value">{{ lane.transaction_count|default:0 }}</span>
+                            </td>
+                            <td>
+                                <span class="revenue-amount">৳{{ lane.total_fare|format_currency }}</span>
+                            </td>
+                            <td>
+                                <span class="revenue-amount">
                                     {% if lane.transaction_count and lane.total_fare %}
                                         ৳{% widthratio lane.total_fare lane.transaction_count 1 %}
                                     {% else %}
                                         ৳0.00
                                     {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
-    {% else %}
-    <div class="stats-card">
-        <i class="fa fa-search" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
-        <h3>No Data Found</h3>
-        <p class="text-muted">No cash transactions found for the selected date range.</p>
-    </div>
-    {% endif %}
-
-    <div class="text-center mt-4">
-        <a href="{% url 'transactions:summary_brief' %}" class="btn btn-primary back-button">
-            <i class="fa fa-arrow-left"></i> Back to Summary Form
-        </a>
+        {% else %}
+        <div class="no-results">
+            <i class="fa fa-search no-results-icon"></i>
+            <h3>No Cash Transactions Found</h3>
+            <p>No cash transactions found for the selected date range.</p>
+            <small class="text-muted">Try adjusting your date range or check if there were any cash transactions during this period.</small>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %} 

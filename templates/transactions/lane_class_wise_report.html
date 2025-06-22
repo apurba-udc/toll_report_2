@@ -5,192 +5,211 @@
 
 {% block extra_css %}
 <style>
-
-    
-    .page-container {
+    body {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
-        padding: 2rem 0;
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+    
+    h1 {
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2rem;
     }
     
     .report-header {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
         text-align: center;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
     
     .report-title {
-        font-size: 2.5rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #2c3e50;
-        margin-bottom: 0.5rem;
+        margin-bottom: 10px;
     }
     
     .report-subtitle {
-        font-size: 1.8rem;
+        font-size: 1.1rem;
         color: #34495e;
-        margin-bottom: 0.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .cash-badge {
+        background: #2ecc71;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 10px;
     }
     
     .report-period {
-        font-size: 1.2rem;
+        font-size: 0.9rem;
         color: #7f8c8d;
-        margin-bottom: 1.5rem;
     }
     
-    .summary-cards {
+    .summary-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
     }
     
-    .summary-card {
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    .stat-card {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
         color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
+        padding: 15px;
+        border-radius: 10px;
         text-align: center;
-        box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
-        transition: transform 0.3s ease;
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
     }
     
-    .summary-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .summary-value {
-        font-size: 2rem;
+    .stat-value {
+        font-size: 1.5rem;
         font-weight: 700;
         display: block;
-        margin-bottom: 0.5rem;
+        margin-bottom: 5px;
     }
     
-    .summary-label {
-        font-size: 0.9rem;
+    .stat-label {
+        font-size: 0.8rem;
         opacity: 0.9;
     }
     
-    .traffic-table-container {
+    .transactions-table {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
         overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
     }
     
-    .table-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1.5rem;
-        text-align: center;
+    .table-wrapper {
+        overflow-x: auto;
+        overflow-y: visible;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
     }
     
-    .traffic-table {
+    .table {
         width: 100%;
+        margin: 0;
+        font-size: 0.8rem;
         border-collapse: collapse;
-        font-size: 0.9rem;
+        min-width: 800px; /* Ensure minimum width for all columns */
     }
     
-    .traffic-table th {
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    .table thead th {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
         color: white;
-        padding: 1rem 0.5rem;
-        text-align: center;
+        border: none;
+        padding: 0.7rem 0.3rem;
         font-weight: 600;
-        font-size: 0.85rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .traffic-table td {
-        padding: 0.8rem 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-size: 0.7rem;
         text-align: center;
-        border: 1px solid #e9ecef;
-        background: white;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
     
-    .traffic-table tbody tr:nth-child(even) {
-        background: #f8f9fa;
+    .table tbody td {
+        padding: 0.5rem 0.3rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        text-align: center;
+        white-space: nowrap;
+        font-size: 0.75rem;
     }
     
-    .traffic-table tbody tr:hover {
-        background: #e8f5e8;
+    .table tbody tr:hover {
+        background: rgba(52, 152, 219, 0.1);
     }
     
-    .lane-header {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
-        color: white !important;
+    .lane-cell {
+        background: #667eea;
+        color: white;
+        padding: 0.2rem 0.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        min-width: 80px;
+    }
+    
+    .count-cell {
+        background: #ecf0f1;
+        color: #2c3e50;
+        padding: 0.2rem 0.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        min-width: 50px;
+    }
+    
+    .amount-cell {
+        color: #27ae60;
         font-weight: 700;
-    }
-    
-    .class-header {
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
-        color: white !important;
-        font-weight: 600;
+        font-size: 0.75rem;
+        min-width: 70px;
     }
     
     .total-row {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
-        color: white !important;
+        background: rgba(52, 152, 219, 0.1) !important;
         font-weight: 700;
     }
     
-    .cash-count-cell { 
-        background-color: #d5f4e6 !important; 
-        color: #27ae60; 
-        font-weight: 600; 
-    }
-    
-    .cash-amount-cell {
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
-        color: white !important;
+    .total-row td {
+        border-top: 2px solid #3498db !important;
+        padding: 0.7rem 0.3rem !important;
         font-weight: 700;
+        font-size: 0.8rem;
     }
     
-    .back-button {
-        position: fixed;
-        top: 2rem;
-        left: 2rem;
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-        color: white;
-        border: none;
-        padding: 1rem;
-        border-radius: 50%;
-        font-size: 1.2rem;
+    .class-header {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%) !important;
+        color: white !important;
+        font-size: 0.65rem !important;
+        min-width: 120px;
+    }
+    
+    .back-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid #3498db;
+        color: #3498db;
+        padding: 10px 15px;
+        border-radius: 25px;
+        font-weight: 600;
         cursor: pointer;
+        font-size: 0.9rem;
         transition: all 0.3s ease;
-        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
-        z-index: 1000;
+        margin-bottom: 20px;
+        display: inline-block;
+        text-decoration: none;
     }
     
-    .back-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(39, 174, 96, 0.4);
-    }
-    
-    @media (max-width: 768px) {
-        .traffic-table {
-            font-size: 0.7rem;
-        }
-        
-        .traffic-table th,
-        .traffic-table td {
-            padding: 0.5rem 0.3rem;
-        }
-        
-        .report-title {
-            font-size: 2rem;
-        }
-        
-        .summary-cards {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    .back-btn:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-2px);
     }
     
     .no-data {
@@ -200,159 +219,232 @@
     }
     
     .no-data-icon {
-        font-size: 4rem;
+        font-size: 3rem;
         margin-bottom: 1rem;
-        color: #bdc3c7;
+        opacity: 0.5;
     }
     
-    .cash-only-badge {
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        display: inline-block;
-        margin-top: 0.5rem;
+    .scroll-hint {
+        text-align: center;
+        padding: 10px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        font-size: 0.8rem;
+        border-top: 1px solid rgba(52, 152, 219, 0.2);
+    }
+    
+    @media (max-width: 1200px) {
+        .table {
+            font-size: 0.7rem;
+            min-width: 1000px;
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 0.4rem 0.2rem;
+        }
+        
+        .summary-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 5px;
+        }
+        
+        .table {
+            font-size: 0.6rem;
+            min-width: 1200px; /* Ensure all columns are visible even on mobile */
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 0.3rem 0.15rem;
+        }
+        
+        .summary-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .report-header {
+            padding: 15px;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+        }
+        
+        .lane-cell {
+            min-width: 60px;
+            font-size: 0.6rem;
+        }
+        
+        .count-cell {
+            min-width: 40px;
+            font-size: 0.6rem;
+        }
+        
+        .amount-cell {
+            min-width: 60px;
+            font-size: 0.65rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        body {
+            padding: 10px;
+        }
+        
+        .table {
+            font-size: 0.55rem;
+            min-width: 1400px; /* Even wider on small screens to ensure visibility */
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 0.25rem 0.1rem;
+        }
+        
+        h1 {
+            font-size: 1.2rem;
+        }
+        
+        .report-title {
+            font-size: 1.2rem;
+        }
+        
+        .class-header {
+            min-width: 100px;
+            font-size: 0.6rem !important;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-container">
-    <div class="container-fluid">
-        <!-- Back Button -->
-        <button class="back-button" onclick="window.history.back()">
-            <i class="fa fa-arrow-left"></i>
-        </button>
+<div class="container">
+    <!-- Back Button -->
+    <button class="back-btn" onclick="window.history.back()">
+        <i class="fa fa-arrow-left"></i> Back
+    </button>
 
-        <!-- Report Header -->
-        <div class="report-header">
-            <h1 class="report-title">
-                <i class="fa fa-money-bill"></i>
-                Shaheed Wasim Akram Expressway
-            </h1>
-            <h2 class="report-subtitle">Patenga Toll Plaza</h2>
-            <div class="cash-only-badge">
-                <i class="fa fa-coins"></i> Cash Transactions Only
-            </div>
-            <div class="report-period">
-                <i class="fa fa-calendar"></i>
-                {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
-            </div>
+    <h1>🚗 Cash Transactions Summary</h1>
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <h2 class="report-title">
+            <i class="fa fa-money-bill"></i>
+            Shaheed Wasim Akram Expressway
+        </h2>
+        <h3 class="report-subtitle">Patenga Toll Plaza</h3>
+        <div class="cash-badge">
+            <i class="fa fa-coins"></i> Cash Transactions Only
         </div>
-
-
-
-        <!-- Summary Cards -->
-        <div class="summary-cards">
-            <div class="summary-card">
-                <span class="summary-value">{{ grand_totals.total_vehicles }}</span>
-                <div class="summary-label">
-                    <i class="fa fa-car"></i> Total Cash Vehicles
-                </div>
-            </div>
-            <div class="summary-card">
-                <span class="summary-value">₹{{ grand_totals.total_amount|format_currency }}</span>
-                <div class="summary-label">
-                    <i class="fa fa-coins"></i> Total Cash Revenue
-                </div>
-            </div>
-            <div class="summary-card">
-                <span class="summary-value">{{ vehicle_classes|length }}</span>
-                <div class="summary-label">
-                    <i class="fa fa-list"></i> Vehicle Classes
-                </div>
-            </div>
-            <div class="summary-card">
-                <span class="summary-value">{{ traffic_summary|length }}</span>
-                <div class="summary-label">
-                    <i class="fa fa-road"></i> Active Lanes
-                </div>
-            </div>
-        </div>
-
-        <!-- Traffic Summary Table -->
-        <div class="traffic-table-container">
-            <h3 class="table-title">
-                <i class="fa fa-table"></i> Cash Transactions Summary by Lane & Vehicle Class
-            </h3>
-            
-            {% if traffic_summary %}
-            <div class="table-responsive">
-                <table class="traffic-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" class="lane-header">Lane</th>
-                            {% for vehicle_class in vehicle_classes %}
-                            <th colspan="2" class="class-header">
-                                {{ vehicle_class_displays|lookup:vehicle_class|default:vehicle_class }}
-                                ({{ vehicle_class }})
-                            </th>
-                            {% endfor %}
-                            <th rowspan="2" class="lane-header">Total<br>Vehicles</th>
-                            <th rowspan="2" class="cash-amount-cell">Total<br>Amount<br>(৳)</th>
-                        </tr>
-                        <tr>
-                            {% for vehicle_class in vehicle_classes %}
-                            <th class="cash-count-cell">Count</th>
-                            <th class="cash-amount-cell">Amount</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for lane_data in traffic_summary %}
-                        <tr>
-                            <td class="lane-header">{{ lane_data.lane_display }}</td>
-                            {% for vehicle_class in vehicle_classes %}
-                            {% with class_data=lane_data.classes|lookup:vehicle_class %}
-                            <td class="cash-count-cell">{{ class_data.count|default:0 }}</td>
-                            <td class="cash-amount-cell">₹{{ class_data.amount|format_currency|default:"0.00" }}</td>
-                            {% endwith %}
-                            {% endfor %}
-                            <td class="lane-header">{{ lane_data.total_vehicles }}</td>
-                            <td class="cash-amount-cell">₹{{ lane_data.total_amount|format_currency }}</td>
-                        </tr>
-                        {% endfor %}
-                        
-                        <!-- Grand Total Row -->
-                        <tr class="total-row">
-                            <td><strong>TOTAL</strong></td>
-                            {% for vehicle_class in vehicle_classes %}
-                            {% with class_total=grand_totals.classes|lookup:vehicle_class %}
-                            <td><strong>{{ class_total.count|default:0 }}</strong></td>
-                            <td><strong>₹{{ class_total.amount|format_currency|default:"0.00" }}</strong></td>
-                            {% endwith %}
-                            {% endfor %}
-                            <td><strong>{{ grand_totals.total_vehicles }}</strong></td>
-                            <td><strong>₹{{ grand_totals.total_amount|format_currency }}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-
-            
-            {% else %}
-            <div class="no-data">
-                <i class="fa fa-search no-data-icon"></i>
-                <h3>No Cash Transaction Data Found</h3>
-                <p>No cash transactions found for the selected time period.</p>
-                <p class="text-muted">Try adjusting your date range or check if there were any cash transactions during this period.</p>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="text-center mt-4">
-            <a href="{% url 'transactions:summary_detail' %}" class="btn btn-primary btn-lg">
-                <i class="fa fa-arrow-left"></i> Back to Report Form
-            </a>
-            <button onclick="window.print()" class="btn btn-success btn-lg ms-3">
-                <i class="fa fa-print"></i> Print Report
-            </button>
+        <div class="report-period">
+            <i class="fa fa-calendar"></i>
+            {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
         </div>
     </div>
+
+    <!-- Summary Statistics -->
+    <div class="summary-stats">
+        <div class="stat-card">
+            <span class="stat-value">{{ grand_totals.total_vehicles }}</span>
+            <div class="stat-label">
+                <i class="fa fa-car"></i> Total Cash Vehicles
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">৳{{ grand_totals.total_amount|floatformat:"0" }}</span>
+            <div class="stat-label">
+                <i class="fa fa-coins"></i> Total Cash Revenue
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ vehicle_classes|length }}</span>
+            <div class="stat-label">
+                <i class="fa fa-list"></i> Vehicle Classes
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ traffic_summary|length }}</span>
+            <div class="stat-label">
+                <i class="fa fa-road"></i> Active Lanes
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    {% if traffic_summary %}
+    <div class="transactions-table">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Lane</th>
+                        {% for vehicle_class in vehicle_classes %}
+                        <th colspan="2" class="class-header">
+                            {{ vehicle_class_displays|lookup:vehicle_class|default:vehicle_class }}
+                            ({{ vehicle_class }})
+                        </th>
+                        {% endfor %}
+                        <th rowspan="2">Total<br>Vehicles</th>
+                        <th rowspan="2">Total<br>Amount<br>(৳)</th>
+                    </tr>
+                    <tr>
+                        {% for vehicle_class in vehicle_classes %}
+                        <th>Count</th>
+                        <th>Amount</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lane_data in traffic_summary %}
+                    <tr>
+                        <td><span class="lane-cell">{{ lane_data.lane_display }}</span></td>
+                        {% for vehicle_class in vehicle_classes %}
+                        {% with class_data=lane_data.classes|lookup:vehicle_class %}
+                        <td><span class="count-cell">{{ class_data.count|default:0 }}</span></td>
+                        <td class="amount-cell"><strong>৳{{ class_data.amount|floatformat:"0"|default:"0" }}</strong></td>
+                        {% endwith %}
+                        {% endfor %}
+                        <td><span class="lane-cell">{{ lane_data.total_vehicles }}</span></td>
+                        <td class="amount-cell"><strong>৳{{ lane_data.total_amount|floatformat:"0" }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Grand Total Row -->
+                    <tr class="total-row">
+                        <td><strong>TOTAL</strong></td>
+                        {% for vehicle_class in vehicle_classes %}
+                        {% with class_total=grand_totals.classes|lookup:vehicle_class %}
+                        <td><strong>{{ class_total.count|default:0 }}</strong></td>
+                        <td><strong>৳{{ class_total.amount|floatformat:"0"|default:"0" }}</strong></td>
+                        {% endwith %}
+                        {% endfor %}
+                        <td><strong>{{ grand_totals.total_vehicles }}</strong></td>
+                        <td><strong>৳{{ grand_totals.total_amount|floatformat:"0" }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="scroll-hint">
+            <i class="fa fa-arrows-alt-h"></i> Scroll horizontally to view all vehicle classes
+        </div>
+    </div>
+    {% else %}
+    <div class="transactions-table">
+        <div class="no-data">
+            <i class="fa fa-search no-data-icon"></i>
+            <h3>No Cash Transactions Found</h3>
+            <p>No cash transactions found for the selected date range.</p>
+            <small>Try adjusting your date range or check if there were any cash transactions during this period.</small>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}
 

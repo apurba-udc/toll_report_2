@@ -95,7 +95,7 @@ class Transaction(models.Model):
     def get_lane_display(self):
         """Get lane display name"""
         lane_names = {
-            'E101': 'Emergency Lane',
+            'E101': 'ECR 1',
             'L101': 'Lane 1',
             'L102': 'Lane 2', 
             'L103': 'Lane 3',

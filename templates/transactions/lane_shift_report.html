@@ -220,8 +220,8 @@
     
     <div class="transactions-table">
         <table class="table">
-            <thead>
-                <tr>
+                        <thead>
+                            <tr>
                     <th>S/N</th>
                     <th>Sequence</th>
                     <th>Date & Time</th>
@@ -232,91 +232,91 @@
                     <th>Fare</th>
                     <th>Collector</th>
                     <th>Image</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for tran in laneShift %}
-                <tr>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tran in laneShift %}
+                            <tr>
                     <td><span class="sequence-number">{{ forloop.counter0|add:laneShift.start_index }}</span></td>
                     <td><span class="sequence-number">{{ tran.sequence }}</span></td>
                     <td>{{ tran.capturedate|date:"M d" }}<br><small>{{ tran.capturedate|time:"H:i" }}</small></td>
                     <td><span class="lane-info">{{ tran.lane|default:"N/A" }}</span></td>
                     <td><span class="vehicle-class">{{ tran.vehicle_class }}</span></td>
                     <td><small>{{ tran.regnumber|default:"N/A"|truncatechars:8 }}</small></td>
-                    <td>
-                        {% if tran.paytype == 'CSH' %}
+                                <td>
+                                    {% if tran.paytype == 'CSH' %}
                             <span class="payment-badge payment-cash">Cash</span>
-                        {% elif tran.paytype == 'VCH' %}
+                                    {% elif tran.paytype == 'VCH' %}
                             <span class="payment-badge payment-exempt">Exempt</span>
-                        {% elif tran.paytype == 'ETC' %}
+                                    {% elif tran.paytype == 'ETC' %}
                             <span class="payment-badge payment-etc">ETC</span>
-                        {% elif tran.paytype == 'TnG' %}
+                                    {% elif tran.paytype == 'TnG' %}
                             <span class="payment-badge payment-tng">TnG</span>
-                        {% else %}
+                                    {% else %}
                             <span class="payment-badge" style="background: #95a5a6; color: white;">{{ tran.paytype }}</span>
-                        {% endif %}
-                    </td>
-                    <td><strong>৳{{ tran.fare|format_currency }}</strong></td>
+                                    {% endif %}
+                                </td>
+                                <td><strong>৳{{ tran.fare|format_currency }}</strong></td>
                     <td><small>{{ tran.collectorid|default:"N/A"|truncatechars:6 }}</small></td>
                     <td>
                         <div class="image-container">
                             <div class="loading-spinner" id="loading-{{ tran.sequence }}" style="display: none;"></div>
                             <div class="image-placeholder" id="placeholder-{{ tran.sequence }}" onclick="loadVehicleImage('{{ tran.sequence }}')">
                                 📷
-                            </div>
+                                        </div>
                             <!-- Direct image link as fallback -->
                             <a href="/api/image/{{ tran.sequence }}/" target="_blank" style="display: block; margin-top: 2px; font-size: 0.6rem; color: #3498db; text-decoration: none;">
                                 Direct
                             </a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
+                                        </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
                     <td colspan="10" style="text-align: center; padding: 2rem; color: #7f8c8d;">
                         <strong>No transactions found</strong><br>
                         <small>Try adjusting your filters or date range</small>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
     </div>
 
     <!-- Pagination -->
     {% if laneShift.has_other_pages %}
     <div class="pagination-container">
-        <ul class="pagination">
-            {% if laneShift.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                    <ul class="pagination">
+                        {% if laneShift.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
                         First
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ laneShift.previous_page_number }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ laneShift.previous_page_number }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
                         Prev
-                    </a>
-                </li>
-            {% endif %}
-
-            <li class="page-item active">
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
                 <span class="page-link">{{ laneShift.number }} of {{ laneShift.paginator.num_pages }}</span>
-            </li>
-
-            {% if laneShift.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ laneShift.next_page_number }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                        </li>
+                        
+                        {% if laneShift.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ laneShift.next_page_number }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
                         Next
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ laneShift.paginator.num_pages }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ laneShift.paginator.num_pages }}&startDate={{ start_date }}&endDate={{ end_date }}&startTime={{ start_time }}&endTime={{ end_time }}&lane={{ selected_lane }}&vType={{ selected_vtype }}&pType={{ selected_ptype }}">
                         Last
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
     </div>
     {% endif %}
 </div>

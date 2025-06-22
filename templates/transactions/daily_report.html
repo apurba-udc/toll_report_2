@@ -211,7 +211,7 @@
     }
     
 
-
+    
     @media (max-width: 768px) {
         .table {
             font-size: 0.7rem;
@@ -239,7 +239,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+    <div class="container">
     <h1>🚗 Daily Transaction Report</h1>
     
     <div class="transactions-table">
@@ -287,7 +287,7 @@
                             <div class="loading-spinner" id="loading-{{ tran.sequence }}" style="display: none;"></div>
                             <div class="image-placeholder" id="placeholder-{{ tran.sequence }}" onclick="loadVehicleImage('{{ tran.sequence }}')">
                                 📷
-                            </div>
+                    </div>
                             <!-- Direct image link as fallback -->
                             <a href="/api/image/{{ tran.sequence }}/" target="_blank" style="display: block; margin-top: 2px; font-size: 0.6rem; color: #3498db; text-decoration: none;">
                                 Direct
@@ -302,57 +302,57 @@
                         <small>Try adjusting your filters or date range</small>
                     </td>
                 </tr>
-                {% endfor %}
+            {% endfor %}
             </tbody>
         </table>
-    </div>
+        </div>
 
-    <!-- Pagination -->
+        <!-- Pagination -->
     {% if transactions.has_other_pages %}
-    <div class="pagination-container">
-        <ul class="pagination">
+        <div class="pagination-container">
+                <ul class="pagination">
             {% if transactions.has_previous %}
-                <li class="page-item">
-                    <button class="page-link" onclick="goToPage(1)">
+                        <li class="page-item">
+                            <button class="page-link" onclick="goToPage(1)">
                         First
-                    </button>
-                </li>
-                <li class="page-item">
+                            </button>
+                        </li>
+                        <li class="page-item">
                     <button class="page-link" onclick="goToPage({{ transactions.previous_page_number }})">
                         Prev
-                    </button>
-                </li>
-            {% endif %}
+                            </button>
+                        </li>
+                    {% endif %}
 
-            <li class="page-item active">
+                            <li class="page-item active">
                 <span class="page-link">{{ transactions.number }} of {{ transactions.paginator.num_pages }}</span>
-            </li>
+                            </li>
 
             {% if transactions.has_next %}
-                <li class="page-item">
+                        <li class="page-item">
                     <button class="page-link" onclick="goToPage({{ transactions.next_page_number }})">
                         Next
-                    </button>
-                </li>
-                <li class="page-item">
+                            </button>
+                        </li>
+                        <li class="page-item">
                     <button class="page-link" onclick="goToPage({{ transactions.paginator.num_pages }})">
                         Last
-                    </button>
-                </li>
-            {% endif %}
-        </ul>
-    </div>
-    
-    <!-- Hidden form for pagination -->
-    <form id="paginationForm" method="post" action="{% url 'transactions:daily_report' %}" style="display: none;">
-        {% csrf_token %}
-        <input type="hidden" name="startDate" value="{{ startDate }}">
-        <input type="hidden" name="endDate" value="{{ endDate }}">
-        <input type="hidden" name="startTime" value="{{ startTime }}">
-        <input type="hidden" name="endTime" value="{{ endTime }}">
-        <input type="hidden" name="page" id="pageInput" value="">
-    </form>
-    {% endif %}
+                            </button>
+                        </li>
+                    {% endif %}
+                </ul>
+        </div>
+        
+        <!-- Hidden form for pagination -->
+        <form id="paginationForm" method="post" action="{% url 'transactions:daily_report' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="startDate" value="{{ startDate }}">
+            <input type="hidden" name="endDate" value="{{ endDate }}">
+            <input type="hidden" name="startTime" value="{{ startTime }}">
+            <input type="hidden" name="endTime" value="{{ endTime }}">
+            <input type="hidden" name="page" id="pageInput" value="">
+        </form>
+        {% endif %}
 
 </div>
 {% endblock %}

@@ -283,7 +283,7 @@ def get_vehicle_class_display(vehicle_class):
 def get_lane_display(lane_code):
     """Get lane display name"""
     lane_names = {
-        'E101': 'Emergency Lane',
+        'E101': 'ECR 1',
         'L101': 'Lane 1',
         'L102': 'Lane 2', 
         'L103': 'Lane 3',

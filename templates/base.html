@@ -655,8 +655,8 @@
 
     <!-- Menu Toggle Button Only -->
     <button class="btn btn-outline-primary" type="button" id="menuToggle">
-        <i class="fa fa-bars"></i>
-    </button>
+                    <i class="fa fa-bars"></i>
+                </button>
 
     <!-- Fixed Sidebar Menu - 25% Width, 100% Height -->
     <div class="fixed-sidebar" id="fixedSidebar">
@@ -690,7 +690,7 @@
                     <li><a href="{% url 'transactions:report_date' %}"><i class="fa fa-calendar-day"></i> Daily Transaction Report</a></li>
                     <li><a href="{% url 'transactions:report_date_lane' %}"><i class="fa fa-road"></i> Lane-wise Analysis</a></li>
                     <li><a href="{% url 'transactions:exempt_details' %}"><i class="fa fa-ban"></i> Exempt Transactions</a></li>
-                </ul>
+                    </ul>
             </div>
             
             <!-- Analytics & Summary -->
@@ -700,7 +700,7 @@
                     <li><a href="{% url 'transactions:summary_brief' %}"><i class="fa fa-money-bill-wave"></i> Revenue Summary</a></li>
                     <li><a href="{% url 'transactions:summary_detail' %}"><i class="fa fa-car"></i> Traffic Analysis</a></li>
                     <li><a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); document.getElementById('fixedSidebar').classList.remove('show'); document.getElementById('menuToggle').classList.remove('active'); document.getElementById('sidebarOverlay').classList.remove('show');"><i class="fa fa-arrow-up"></i> Back to Top</a></li>
-                </ul>
+                    </ul>
             </div>
             
             <!-- System & Settings -->
@@ -710,7 +710,7 @@
                     <li><a href="/admin/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
                     <li><a href="#" onclick="window.print()"><i class="fa fa-print"></i> Print Current Page</a></li>
                     <li><a href="#" onclick="location.reload()"><i class="fa fa-refresh"></i> Refresh Page</a></li>
-                </ul>
+                    </ul>
             </div>
         </div>
     </div>

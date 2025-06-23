@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Sum, Max, Min
@@ -20,6 +20,8 @@ from .models import Transaction, TollUser
 from django.urls import reverse
 from django.utils import timezone
 import pytz
+from django.contrib import messages
+from django.conf import settings
 
 
 @login_required
@@ -41,21 +43,19 @@ def daily_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly using datetime objects
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed (assuming local timezone)
-            if timezone.is_aware(start_datetime):
-                pass  # Already timezone aware
-            else:
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -142,21 +142,19 @@ def lane_shift_report(request):
         elif p_type == 'Exempt':
             p_type = 'VCH'
         
-        # Parse dates and times properly using datetime objects
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed (assuming local timezone)
-            if timezone.is_aware(start_datetime):
-                pass  # Already timezone aware
-            else:
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -249,21 +247,19 @@ def lane_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly using datetime objects
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed (assuming local timezone)
-            if timezone.is_aware(start_datetime):
-                pass  # Already timezone aware
-            else:
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -356,21 +352,19 @@ def lane_wise_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly using datetime objects
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed (assuming local timezone)
-            if timezone.is_aware(start_datetime):
-                pass  # Already timezone aware
-            else:
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -565,21 +559,19 @@ def lane_class_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly using datetime objects
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed (assuming local timezone)
-            if timezone.is_aware(start_datetime):
-                pass  # Already timezone aware
-            else:
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -695,21 +687,19 @@ def lane_class_wise_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly using datetime objects
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed (assuming local timezone)
-            if timezone.is_aware(start_datetime):
-                pass  # Already timezone aware
-            else:
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -894,23 +884,24 @@ def exempt_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Convert to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed
-            if timezone.is_aware(Transaction.objects.first().capturedate if Transaction.objects.exists() else datetime.now()):
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
-        except (ValueError, AttributeError):
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
+                
+        except ValueError as e:
             # Fallback to string format if parsing fails
-            start_datetime = start_datetime_str
-            end_datetime = end_datetime_str
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
         # Get all lanes that have exempt transactions
         all_lanes = Transaction.objects.filter(
@@ -1033,23 +1024,24 @@ def exempt_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times properly
+        # Parse dates and times as UTC (database timezone) for accurate filtering
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Convert to datetime objects for precise filtering
-            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
-            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            # Parse to naive datetime objects first
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make timezone aware if needed
-            if timezone.is_aware(Transaction.objects.first().capturedate if Transaction.objects.exists() else datetime.now()):
-                start_datetime = timezone.make_aware(start_datetime)
-                end_datetime = timezone.make_aware(end_datetime)
-        except (ValueError, AttributeError):
+            # Make them UTC timezone-aware (database stores in UTC)
+            utc_tz = pytz.UTC
+            start_datetime = utc_tz.localize(start_datetime_naive)
+            end_datetime = utc_tz.localize(end_datetime_naive)
+                
+        except ValueError as e:
             # Fallback to string format if parsing fails
-            start_datetime = start_datetime_str
-            end_datetime = end_datetime_str
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
         # Get all lanes that have exempt transactions
         all_lanes = Transaction.objects.filter(

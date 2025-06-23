@@ -221,13 +221,11 @@
             <p>Secure Transaction Management System</p>
         </div>
         
-        {% if messages %}
+        {% if error %}
             <div class="messages">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+                <div class="alert alert-error">
+                    {{ error }}
+                </div>
             </div>
         {% endif %}
         
@@ -257,6 +255,7 @@
                     autofocus
                     placeholder="Enter your username"
                     autocomplete="username"
+                    value="{{ username|default:'' }}"
                 >
             </div>
             
@@ -305,16 +304,12 @@
         });
     </script>
     
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                <script>
-                    document.querySelectorAll('.form-control').forEach(input => {
-                        input.classList.add('error');
-                    });
-                </script>
-            {% endif %}
-        {% endfor %}
+    {% if error %}
+        <script>
+            document.querySelectorAll('.form-control').forEach(input => {
+                input.classList.add('error');
+            });
+        </script>
     {% endif %}
 </body>
 </html> 

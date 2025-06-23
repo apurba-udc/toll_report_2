@@ -17,7 +17,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from .models import Transaction
-from django.contrib import messages
 from django.urls import reverse
 
 
@@ -1131,7 +1130,6 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f'Welcome back, {user.name}!')
                 
                 # Redirect to next page or default
                 next_url = request.POST.get('next') or request.GET.get('next')
@@ -1139,16 +1137,23 @@ def login_view(request):
                     return redirect(next_url)
                 return redirect('transactions:overview')
             else:
-                messages.error(request, 'Invalid username or password. Please check your credentials.')
+                # Add error context to template instead of using messages
+                context = {
+                    'error': 'Invalid username or password. Please check your credentials.',
+                    'username': username
+                }
+                return render(request, 'auth/login.html', context)
         else:
-            messages.error(request, 'Please enter both username and password.')
+            # Add error context to template instead of using messages
+            context = {
+                'error': 'Please enter both username and password.',
+                'username': username if username else ''
+            }
+            return render(request, 'auth/login.html', context)
     
     return render(request, 'auth/login.html')
 
 def logout_view(request):
     """Logout view"""
-    user_name = request.user.name if request.user.is_authenticated else None
     logout(request)
-    if user_name:
-        messages.success(request, f'Goodbye, {user_name}! You have been logged out.')
     return redirect('transactions:login')

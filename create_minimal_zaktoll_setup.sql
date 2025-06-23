@@ -5,6 +5,7 @@
 -- needed for the Django toll reporting application
 -- 
 -- Requirements: SQL Server 2016+ or Azure SQL Database
+-- Zero Django framework tables needed!
 -- =====================================================
 
 USE ZAKTOLL;
@@ -147,8 +148,15 @@ BEGIN
 END
 
 PRINT '=====================================================';
-PRINT 'SETUP COMPLETE';
+PRINT 'SETUP COMPLETE - TRULY MINIMAL DATABASE!';
 PRINT '=====================================================';
+PRINT '';
+PRINT 'DATABASE SUMMARY:';
+PRINT '• Total tables required: 2 (TRANSACTION + USERS)';
+PRINT '• Django framework tables: 0 (all disabled!)';
+PRINT '• Session storage: In-memory cache (no database)';
+PRINT '• Migrations: Completely disabled';
+PRINT '• Write permissions: Not required';
 PRINT '';
 PRINT 'NEXT STEPS:';
 PRINT '1. Update Django settings.py with correct database credentials';
@@ -170,6 +178,9 @@ PRINT '        },';
 PRINT '    }';
 PRINT '}';
 PRINT '';
+PRINT 'SESSIONS = In-memory cache (no django_session table needed)';
+PRINT 'MIGRATIONS = Completely disabled for all apps';
+PRINT '';
 PRINT 'IMPORTANT: This application requires ONLY read permissions!';
-PRINT 'No Django framework tables (migrations, sessions, etc.) are needed.';
+PRINT 'Zero Django framework tables needed - sessions use memory cache.';
 GO 

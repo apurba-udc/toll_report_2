@@ -78,6 +78,84 @@
         color: #495057;
     }
     
+    .summary-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        margin: 20px;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .summary-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border-left: 4px solid #007bff;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .download-section {
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .download-btn {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .download-btn:hover {
+        background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .download-btn i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+    }
+    
     .transactions-table {
         overflow-x: auto;
     }
@@ -207,6 +285,48 @@
                 </div>
             {% endif %}
         </div>
+        
+        {% if summary_stats %}
+        <div class="summary-section">
+            <div class="summary-title">Summary Statistics</div>
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-value">{{ summary_stats.total_traffic|floatformat:"0" }}</div>
+                    <div class="stat-label">Total Traffic</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">৳{{ summary_stats.total_revenue|floatformat:"0" }}</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">৳{{ summary_stats.average_revenue_per_vehicle|floatformat:"2" }}</div>
+                    <div class="stat-label">Avg Revenue/Vehicle</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ summary_stats.total_cash_vehicles|floatformat:"0" }}</div>
+                    <div class="stat-label">Cash Vehicles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ summary_stats.total_exempt_vehicles|floatformat:"0" }}</div>
+                    <div class="stat-label">Exempt Vehicles</div>
+                </div>
+            </div>
+            
+            <div class="download-section">
+                <form method="post" action="{% url 'transactions:summary_class_pdf' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="startDate" value="{{ start_date }}">
+                    <input type="hidden" name="endDate" value="{{ end_date }}">
+                    <input type="hidden" name="startTime" value="{{ start_time }}">
+                    <input type="hidden" name="endTime" value="{{ end_time }}">
+                    <button type="submit" class="download-btn">
+                        <i class="fa fa-download"></i>
+                        Download PDF Report
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

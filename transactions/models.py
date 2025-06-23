@@ -1,6 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.hashers import check_password, make_password
+from django.utils import timezone
 
 
 class ReadOnlyManager(models.Manager):
@@ -117,3 +119,77 @@ class Transaction(models.Model):
         if self.fare:
             return f"{self.fare:.2f}"
         return "0.00"
+
+
+class CustomUserManager(BaseUserManager):
+    def get_by_natural_key(self, username):
+        return self.get(username=username)
+
+class TollUser(AbstractBaseUser):
+    """Custom User model mapping to USERS table"""
+    userId = models.CharField(max_length=20, primary_key=True, db_column='userId')
+    username = models.CharField(max_length=50, unique=True, db_column='username')
+    password = models.CharField(max_length=128, db_column='password')
+    name = models.CharField(max_length=100, db_column='name')
+    role = models.CharField(max_length=20, db_column='role')
+    active = models.BooleanField(default=True, db_column='active')
+    createdDate = models.DateTimeField(auto_now_add=True, db_column='createdDate')
+    lastLogin = models.DateTimeField(null=True, blank=True, db_column='lastLogin')
+    
+    # Override the last_login field from AbstractBaseUser to use our lastLogin field
+    last_login = None  # Disable the inherited last_login field
+    
+    objects = CustomUserManager()
+    
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['name']
+    
+    class Meta:
+        db_table = 'USERS'
+        managed = False  # Don't let Django manage this table
+    
+    def __str__(self):
+        return self.username
+    
+    @property
+    def is_active(self):
+        return self.active
+    
+    @property
+    def is_authenticated(self):
+        return True
+    
+    @property
+    def is_anonymous(self):
+        return False
+    
+    def has_perm(self, perm, obj=None):
+        """Check if user has permission"""
+        # Allow admin/ADMIN full access
+        if self.role.lower() in ['admin'] or self.role.upper() in ['ADMIN']:
+            return True
+        # Allow webadmin and operators basic access
+        if self.role.lower() in ['webadmin', 'webuser'] or self.role.upper() in ['OPERATOR']:
+            return True
+        return False
+    
+    def has_perms(self, perm_list, obj=None):
+        """Check if user has all permissions in list"""
+        return all(self.has_perm(perm, obj) for perm in perm_list)
+    
+    def has_module_perms(self, app_label):
+        """Check if user has permissions for app"""
+        allowed_roles = ['admin', 'webadmin', 'webuser', 'ADMIN', 'OPERATOR']
+        return self.role in allowed_roles
+    
+    def check_password(self, raw_password):
+        """Check password - assuming passwords are stored as plain text in your DB"""
+        # If passwords are hashed, use: return check_password(raw_password, self.password)
+        # If passwords are plain text (not recommended), use:
+        return self.password == raw_password
+    
+    def set_password(self, raw_password):
+        """Set password"""
+        # If you want to hash passwords: self.password = make_password(raw_password)
+        # If keeping plain text: self.password = raw_password
+        self.password = raw_password

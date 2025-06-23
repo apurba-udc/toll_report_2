@@ -24,10 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-your-secret-key-here'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True  # Changed to True for development
 
-ALLOWED_HOSTS = ['toll.sdlbdcloud.com', 'localhost', '127.0.0.1']
-
+ALLOWED_HOSTS = [
+    'toll.sdlbdcloud.com', 
+    'localhost', 
+    '127.0.0.1',
+    '115.127.158.186',  # আপনার লোকাল IP
+    '115.127.158.188',  # Added the IP from the error message
+    '*',  # সব IP অনুমতি দিতে (শুধু development এর জন্য)
+]
 
 # Application definition
 
@@ -50,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'transactions.middleware.ReadOnlyMiddleware',  # Custom read-only enforcement
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -94,7 +101,7 @@ DATABASES = {
 }
 
 # Force MSSQL database usage only
-DATABASE_ROUTERS = []
+DATABASE_ROUTERS = ['transactions.db_router.ReadOnlyRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -147,6 +154,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 
+# CSRF Trusted Origins - Add this to fix origin checking
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://toll.sdlbdcloud.com',
+    'http://115.127.158.186',
+    'https://115.127.158.186',
+    'http://115.127.158.188',
+    'https://115.127.158.188',
+]
+
+# Custom User Model
+AUTH_USER_MODEL = 'transactions.TollUser'
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'transactions.auth_backends.TollUserBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Fallback
+]
+
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -154,19 +181,86 @@ REST_FRAMEWORK = {
 }
 
 # Login settings
-LOGIN_URL = '/auth/login/'
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 # SSL/HTTPS Settings
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
+# Make secure cookie settings conditional based on DEBUG mode
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Logging configuration for read-only database monitoring
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'toll_system.log',
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'security': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'transactions.middleware': {
+            'handlers': ['file', 'security', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'transactions.db_router': {
+            'handlers': ['security', 'console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

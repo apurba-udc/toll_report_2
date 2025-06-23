@@ -11,93 +11,23 @@ from datetime import datetime, date
 import base64
 from io import BytesIO
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter, A4, landscape
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from .models import Transaction
+from django.contrib import messages
+from django.urls import reverse
 
 
+@login_required
 def home_view(request):
     """Overview page - equivalent to Laravel Overview route"""
     return render(request, 'transactions/overview.html')
 
 
-def transaction_list(request):
-    """Transaction list with pagination - equivalent to Laravel show() method"""
-    transactions = Transaction.objects.exclude(
-        transtype__in=['LOGIN', 'LOGOUT']
-    ).exclude(
-        vehicle_class='0'
-    ).order_by('-capturedate')
-    
-    paginator = Paginator(transactions, 10)
-    page = request.GET.get('page')
-    
-    try:
-        transactions_page = paginator.page(page)
-    except PageNotAnInteger:
-        transactions_page = paginator.page(1)
-    except EmptyPage:
-        transactions_page = paginator.page(paginator.num_pages)
-    
-    return render(request, 'transactions/list.html', {
-        'data': transactions_page,
-        'title': 'Transaction Details'
-    })
-
-
-def transaction_pdf(request):
-    """Generate PDF report - equivalent to Laravel pdf() method"""
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="transactions.pdf"'
-    
-    # Create PDF
-    doc = SimpleDocTemplate(response, pagesize=A4)
-    elements = []
-    styles = getSampleStyleSheet()
-    
-    # Title
-    title = Paragraph('<b>Transaction Report</b>', styles['Title'])
-    elements.append(title)
-    
-    # Get data
-    transactions = Transaction.objects.all()[:100]  # Limit for performance
-    
-    # Create table data
-    data = [['Plaza ID', 'Plaza Name', 'Lane', 'Collector ID', 'Class', 'Date', 'Fare']]
-    
-    for trans in transactions:
-        data.append([
-            trans.plazaid or '',
-            trans.plazaname or '',
-            trans.lane or '',
-            trans.collectorid or '',
-            trans.vehicle_class or '',
-            trans.capturedate.strftime('%Y-%m-%d %H:%M:%S') if trans.capturedate else '',
-            trans.get_formatted_fare
-        ])
-    
-    # Create table
-    table = Table(data)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    
-    elements.append(table)
-    doc.build(elements)
-    
-    return response
-
-
+@login_required
 def daily_report(request):
     """Daily report view - equivalent to Laravel dailyReport() method"""
     if request.method == 'POST':
@@ -157,6 +87,7 @@ def daily_report(request):
     return render(request, 'transactions/report_date.html')
 
 
+@login_required
 def lane_shift_report(request):
     """Lane shift report - equivalent to Laravel laneShiftReport() method"""
     if request.method == 'POST':
@@ -248,6 +179,7 @@ def lane_shift_report(request):
     return render(request, 'transactions/report_date_lane.html')
 
 
+@login_required
 def lane_wise_report(request):
     """Lane wise revenue summary - equivalent to Laravel laneWiseReport() method"""
     if request.method == 'POST':
@@ -301,9 +233,22 @@ def lane_wise_report(request):
             grand_totals['total_exempt'] += exempt_transactions
             grand_totals['total_revenue'] += total_revenue
 
+        # Calculate summary statistics
+        total_traffic = grand_totals['total_cash'] + grand_totals['total_exempt']
+        average_revenue_per_vehicle = (grand_totals['total_revenue'] / grand_totals['total_cash']) if grand_totals['total_cash'] > 0 else 0
+        
+        summary_stats = {
+            'total_traffic': total_traffic,
+            'total_revenue': grand_totals['total_revenue'],
+            'average_revenue_per_vehicle': average_revenue_per_vehicle,
+            'total_cash_vehicles': grand_totals['total_cash'],
+            'total_exempt_vehicles': grand_totals['total_exempt']
+        }
+
         context = {
             'lane_summary': lane_summary,
             'grand_totals': grand_totals,
+            'summary_stats': summary_stats,
             'start_date': start_date,
             'end_date': end_date,
             'start_time': start_time,
@@ -314,6 +259,154 @@ def lane_wise_report(request):
         return render(request, 'transactions/lane_wise_report.html', context)
     
     return render(request, 'transactions/summary_brief.html')
+
+
+@login_required
+def lane_wise_report_pdf(request):
+    """Generate PDF for lane wise report"""
+    if request.method == 'POST':
+        start_date = request.POST.get('startDate')
+        end_date = request.POST.get('endDate')
+        start_time = request.POST.get('startTime', '00:00:00')
+        end_time = request.POST.get('endTime', '23:59:59')
+        
+        start_datetime = f"{start_date} {start_time}"
+        end_datetime = f"{end_date} {end_time}"
+        
+        base_query = Transaction.objects.filter(
+            capturedate__gte=start_datetime,
+            capturedate__lte=end_datetime
+        ).exclude(
+            transtype__in=['LOGIN', 'LOGOUT']
+        ).exclude(
+            vehicle_class__in=['0', '', None]
+        )
+
+        # Get all lanes
+        all_lanes = base_query.values_list('lane', flat=True).distinct().order_by('lane')
+        
+        lane_summary = []
+        grand_totals = {
+            'total_cash': 0,
+            'total_exempt': 0,
+            'total_revenue': 0
+        }
+        
+        for lane in all_lanes:
+            lane_transactions = base_query.filter(lane=lane)
+            
+            cash_transactions = lane_transactions.filter(paytype='CSH').count()
+            exempt_transactions = lane_transactions.filter(paytype='VCH').count()
+            total_revenue = lane_transactions.filter(paytype='CSH').aggregate(
+                total=Sum('fare')
+            )['total'] or 0
+            
+            lane_data = {
+                'lane': lane,
+                'lane_display': get_lane_display(lane),
+                'cash_transactions': cash_transactions,
+                'exempt_transactions': exempt_transactions,
+                'total_revenue': total_revenue
+            }
+            
+            lane_summary.append(lane_data)
+            
+            grand_totals['total_cash'] += cash_transactions
+            grand_totals['total_exempt'] += exempt_transactions
+            grand_totals['total_revenue'] += total_revenue
+
+        # Calculate summary statistics
+        total_traffic = grand_totals['total_cash'] + grand_totals['total_exempt']
+        average_revenue_per_vehicle = (grand_totals['total_revenue'] / grand_totals['total_cash']) if grand_totals['total_cash'] > 0 else 0
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="lane_wise_report_{start_date}_to_{end_date}.pdf"'
+        
+        # Ensure A4 size
+        doc = SimpleDocTemplate(response, pagesize=A4)
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Title with different font sizes and closer spacing
+        title_style = styles['Title'].clone('TitleStyle')
+        title_style.spaceAfter = 6  # Reduced space after title
+        title = Paragraph('''
+        <font size="16"><b>Shaheed Wasim Akram Expressway</b></font><br/>
+        <font size="12">Patenga Toll Plaza</font><br/>
+        <font size="12">Lane Wise Summary Report</font>
+        ''', title_style)
+        elements.append(title)
+        
+        # Date range - centered with smaller font and reduced spacing
+        date_style = styles['Normal'].clone('DateStyle')
+        date_style.alignment = 1  # Center alignment
+        date_style.fontSize = 10
+        date_style.spaceBefore = 6  # Reduced space before
+        date_style.spaceAfter = 6   # Reduced space after
+        date_para = Paragraph(f'<b>Period:</b> {start_date} {start_time} to {end_date} {end_time}', date_style)
+        elements.append(date_para)
+        
+        # Gap between period and table
+        elements.append(Paragraph('<br/><br/>', styles['Normal']))
+        
+        # Create table data
+        data = [['S/N', 'Lane', 'Cash Traffic', 'Exempted Traffic', 'Total Revenue']]
+        
+        for i, lane in enumerate(lane_summary, 1):
+            data.append([
+                str(i),
+                lane['lane_display'],
+                str(lane['cash_transactions']),
+                str(lane['exempt_transactions']),
+                f"{lane['total_revenue']:,.0f}"
+            ])
+        
+        # Add grand total row
+        data.append([
+            '',
+            'Grand Total',
+            str(grand_totals['total_cash']),
+            str(grand_totals['total_exempt']),
+            f"{grand_totals['total_revenue']:,.0f}"
+        ])
+        
+        # Create table with lighter borders and header
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -2), colors.white),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ]))
+        
+        elements.append(table)
+        
+        # Gap between table and summary statistics
+        elements.append(Paragraph('<br/><br/>', styles['Normal']))
+        
+        # Summary Statistics - after table with "Taka" text
+        summary_para = Paragraph(f'''
+        <b>Summary Statistics:</b><br/>
+        Total Traffic: {total_traffic:,} vehicles<br/>
+        Total Revenue: Taka {grand_totals['total_revenue']:,.0f}<br/>
+        Average Revenue per Vehicle: Taka {average_revenue_per_vehicle:.2f}<br/>
+        Cash Vehicles: {grand_totals['total_cash']:,}<br/>
+        Exempt Vehicles: {grand_totals['total_exempt']:,}
+        ''', styles['Normal'])
+        elements.append(summary_para)
+        
+        doc.build(elements)
+        
+        return response
+    
+    return redirect('summary_lane')
 
 
 def get_vehicle_class_display(vehicle_class):
@@ -355,6 +448,7 @@ def get_lane_display(lane_code):
     }
     return lane_names.get(lane_code, lane_code or 'Unknown Lane')
 
+@login_required
 def lane_class_wise_report(request):
     """Cash transactions summary with detailed class breakdown - equivalent to Laravel laneClassWiseReport() method"""
     if request.method == 'POST':
@@ -430,9 +524,22 @@ def lane_class_wise_report(request):
         
         vehicle_class_displays = {vc: get_vehicle_class_display(vc) for vc in all_vehicle_classes}
         
+        # Calculate summary statistics
+        total_traffic = grand_totals['total_vehicles'] + grand_totals['total_exempt']
+        average_revenue_per_vehicle = (grand_totals['total_amount'] / grand_totals['total_vehicles']) if grand_totals['total_vehicles'] > 0 else 0
+        
+        summary_stats = {
+            'total_traffic': total_traffic,
+            'total_revenue': grand_totals['total_amount'],
+            'average_revenue_per_vehicle': average_revenue_per_vehicle,
+            'total_cash_vehicles': grand_totals['total_vehicles'],
+            'total_exempt_vehicles': grand_totals['total_exempt']
+        }
+        
         context = {
             'traffic_summary': traffic_summary,
             'grand_totals': grand_totals,
+            'summary_stats': summary_stats,
             'vehicle_classes': sorted(all_vehicle_classes),
             'vehicle_class_displays': vehicle_class_displays,
             'start_date': start_date,
@@ -447,6 +554,185 @@ def lane_class_wise_report(request):
     return render(request, 'transactions/summary_detail.html')
 
 
+@login_required
+def lane_class_wise_report_pdf(request):
+    """Generate PDF for lane class wise report"""
+    if request.method == 'POST':
+        start_date = request.POST.get('startDate')
+        end_date = request.POST.get('endDate')
+        start_time = request.POST.get('startTime', '00:00:00')
+        end_time = request.POST.get('endTime', '23:59:59')
+        
+        # Combine date and time
+        start_datetime = f"{start_date} {start_time}"
+        end_datetime = f"{end_date} {end_time}"
+        
+        base_transactions = Transaction.objects.filter(
+            capturedate__gte=start_datetime,
+            capturedate__lte=end_datetime
+        ).exclude(
+            transtype__in=['LOGIN', 'LOGOUT']
+        ).exclude(
+            vehicle_class__in=['0', '', None]
+        )
+
+        all_lanes = base_transactions.values_list('lane', flat=True).distinct().order_by('lane')
+        all_vehicle_classes = base_transactions.filter(paytype='CSH').values_list('vehicle_class', flat=True).distinct().order_by('vehicle_class')
+        
+        traffic_summary = []
+        grand_totals = {
+            'total_vehicles': 0,
+            'total_amount': 0,
+            'total_exempt': 0,
+            'classes': {}
+        }
+        
+        for vc in all_vehicle_classes:
+            grand_totals['classes'][vc] = { 'count': 0, 'amount': 0 }
+        
+        for lane in all_lanes:
+            lane_data = {
+                'lane': lane,
+                'lane_display': get_lane_display(lane),
+                'total_vehicles': 0,
+                'total_amount': 0,
+                'exempt_count': 0,
+                'classes': {}
+            }
+            
+            lane_transactions_all = base_transactions.filter(lane=lane)
+            exempt_count = lane_transactions_all.filter(paytype='VCH').count()
+            lane_data['exempt_count'] = exempt_count
+            grand_totals['total_exempt'] += exempt_count
+            
+            lane_cash_transactions = lane_transactions_all.filter(paytype='CSH')
+
+            for vehicle_class in all_vehicle_classes:
+                class_transactions = lane_cash_transactions.filter(vehicle_class=vehicle_class)
+                class_count = class_transactions.count()
+                class_amount = class_transactions.aggregate(total=Sum('fare'))['total'] or 0
+                
+                lane_data['classes'][vehicle_class] = { 'count': class_count, 'amount': class_amount }
+                lane_data['total_vehicles'] += class_count
+                lane_data['total_amount'] += class_amount
+                
+                grand_totals['classes'][vehicle_class]['count'] += class_count
+                grand_totals['classes'][vehicle_class]['amount'] += class_amount
+            
+            grand_totals['total_vehicles'] += lane_data['total_vehicles']
+            grand_totals['total_amount'] += lane_data['total_amount']
+            
+            if lane_data['total_vehicles'] > 0 or lane_data['exempt_count'] > 0:
+                traffic_summary.append(lane_data)
+        
+        vehicle_class_displays = {vc: get_vehicle_class_display(vc) for vc in all_vehicle_classes}
+        
+        # Calculate summary statistics
+        total_traffic = grand_totals['total_vehicles'] + grand_totals['total_exempt']
+        average_revenue_per_vehicle = (grand_totals['total_amount'] / grand_totals['total_vehicles']) if grand_totals['total_vehicles'] > 0 else 0
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="lane_class_wise_report_{start_date}_to_{end_date}.pdf"'
+        
+        # Use landscape orientation for wide table
+        doc = SimpleDocTemplate(response, pagesize=landscape(A4))
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Title with different font sizes and closer spacing
+        title_style = styles['Title'].clone('TitleStyle')
+        title_style.spaceAfter = 6  # Reduced space after title
+        title = Paragraph('''
+        <font size="16"><b>Shaheed Wasim Akram Expressway</b></font><br/>
+        <font size="12">Patenga Toll Plaza</font><br/>
+        <font size="12">Lane & Class Wise Summary Report</font>
+        ''', title_style)
+        elements.append(title)
+        
+        # Date range - centered with smaller font and reduced spacing
+        date_style = styles['Normal'].clone('DateStyle')
+        date_style.alignment = 1  # Center alignment
+        date_style.fontSize = 10
+        date_style.spaceBefore = 6  # Reduced space before
+        date_style.spaceAfter = 6   # Reduced space after
+        date_para = Paragraph(f'<b>Period:</b> {start_date} {start_time} to {end_date} {end_time}', date_style)
+        elements.append(date_para)
+        
+        # Gap between period and table
+        elements.append(Paragraph('<br/><br/>', styles['Normal']))
+        
+        # Create table headers
+        headers = ['S/N', 'Lane']
+        for vc in sorted(all_vehicle_classes):
+            headers.append(vehicle_class_displays[vc])
+        headers.extend(['Traffic', 'Exempted', 'Revenue'])
+        
+        data = [headers]
+        
+        # Add data rows
+        for i, lane in enumerate(traffic_summary, 1):
+            row = [str(i), lane['lane_display']]
+            for vc in sorted(all_vehicle_classes):
+                row.append(str(lane['classes'].get(vc, {}).get('count', 0)))
+            row.extend([
+                str(lane['total_vehicles']),
+                str(lane['exempt_count']),
+                f"{lane['total_amount']:,.0f}"
+            ])
+            data.append(row)
+        
+        # Add grand total row
+        total_row = ['', 'Grand Total']
+        for vc in sorted(all_vehicle_classes):
+            total_row.append(str(grand_totals['classes'].get(vc, {}).get('count', 0)))
+        total_row.extend([
+            str(grand_totals['total_vehicles']),
+            str(grand_totals['total_exempt']),
+            f"{grand_totals['total_amount']:,.0f}"
+        ])
+        data.append(total_row)
+        
+        # Create table with lighter borders and header
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -2), colors.white),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ]))
+        
+        elements.append(table)
+        
+        # Gap between table and summary statistics
+        elements.append(Paragraph('<br/><br/>', styles['Normal']))
+        
+        # Summary Statistics - after table with "Taka" text
+        summary_para = Paragraph(f'''
+        <b>Summary Statistics:</b><br/>
+        Total Traffic: {total_traffic:,} vehicles<br/>
+        Total Revenue: Taka {grand_totals['total_amount']:,.0f}<br/>
+        Average Revenue per Vehicle: Taka {average_revenue_per_vehicle:.2f}<br/>
+        Cash Vehicles: {grand_totals['total_vehicles']:,}<br/>
+        Exempt Vehicles: {grand_totals['total_exempt']:,}
+        ''', styles['Normal'])
+        elements.append(summary_para)
+        
+        doc.build(elements)
+        
+        return response
+    
+    return redirect('summary_class')
+
+
+@login_required
 def exempt_report(request):
     """Exempt transaction report - equivalent to Laravel lane() method"""
     if request.method == 'POST':
@@ -533,6 +819,19 @@ def exempt_report(request):
         # Create vehicle class display mapping
         vehicle_class_displays = {vc: get_vehicle_class_display(vc) for vc in all_vehicle_classes}
         
+        # Calculate summary statistics for exempt transactions
+        summary_stats = {
+            'total_exempt_vehicles': grand_totals['total_vehicles'],
+            'total_lanes_with_exemptions': len(exempt_summary),
+            'total_vehicle_classes': len(all_vehicle_classes),
+        }
+        
+        # Calculate average exemptions per lane
+        if summary_stats['total_lanes_with_exemptions'] > 0:
+            summary_stats['average_exemptions_per_lane'] = summary_stats['total_exempt_vehicles'] / summary_stats['total_lanes_with_exemptions']
+        else:
+            summary_stats['average_exemptions_per_lane'] = 0
+        
         context = {
             'traffic_summary': exempt_summary,
             'grand_totals': grand_totals,
@@ -542,7 +841,8 @@ def exempt_report(request):
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Exempt Traffic Summary'
+            'title': 'Exempt Traffic Summary',
+            'summary_stats': summary_stats
         }
         
         return render(request, 'transactions/exempt_report.html', context)
@@ -550,6 +850,178 @@ def exempt_report(request):
     return render(request, 'transactions/exempt_details.html')
 
 
+@login_required
+def exempt_report_pdf(request):
+    """Generate PDF for exempt report"""
+    if request.method == 'POST':
+        start_date = request.POST.get('startDate')
+        end_date = request.POST.get('endDate')
+        start_time = request.POST.get('startTime', '00:00:00')
+        end_time = request.POST.get('endTime', '23:59:59')
+        
+        start_datetime = f"{start_date} {start_time}"
+        end_datetime = f"{end_date} {end_time}"
+        
+        # Get all lanes that have exempt transactions
+        all_lanes = Transaction.objects.filter(
+            capturedate__gte=start_datetime,
+            capturedate__lte=end_datetime,
+            paytype='VCH'
+        ).exclude(
+            transtype__in=['LOGIN', 'LOGOUT']
+        ).exclude(
+            vehicle_class__in=['0', '', None]
+        ).values_list('lane', flat=True).distinct().order_by('lane')
+        
+        # Get all vehicle classes that have exempt transactions
+        all_vehicle_classes = Transaction.objects.filter(
+            capturedate__gte=start_datetime,
+            capturedate__lte=end_datetime,
+            paytype='VCH'
+        ).exclude(
+            transtype__in=['LOGIN', 'LOGOUT']
+        ).exclude(
+            vehicle_class__in=['0', '', None]
+        ).values_list('vehicle_class', flat=True).distinct().order_by('vehicle_class')
+        
+        exempt_summary = []
+        grand_totals = {
+            'total_vehicles': 0,
+            'classes': {}
+        }
+        
+        for vc in all_vehicle_classes:
+            grand_totals['classes'][vc] = 0
+        
+        for lane in all_lanes:
+            lane_data = {
+                'lane': lane,
+                'lane_display': get_lane_display(lane),
+                'total_vehicles': 0,
+                'classes': {}
+            }
+            
+            lane_transactions = Transaction.objects.filter(
+                capturedate__gte=start_datetime,
+                capturedate__lte=end_datetime,
+                lane=lane,
+                paytype='VCH'
+            ).exclude(
+                transtype__in=['LOGIN', 'LOGOUT']
+            ).exclude(
+                vehicle_class__in=['0', '', None]
+            )
+            
+            for vehicle_class in all_vehicle_classes:
+                class_count = lane_transactions.filter(vehicle_class=vehicle_class).count()
+                lane_data['classes'][vehicle_class] = class_count
+                lane_data['total_vehicles'] += class_count
+                grand_totals['classes'][vehicle_class] += class_count
+            
+            grand_totals['total_vehicles'] += lane_data['total_vehicles']
+            
+            if lane_data['total_vehicles'] > 0:
+                exempt_summary.append(lane_data)
+        
+        vehicle_class_displays = {vc: get_vehicle_class_display(vc) for vc in all_vehicle_classes}
+        
+        # Calculate summary statistics
+        total_lanes_with_exemptions = len(exempt_summary)
+        average_exemptions_per_lane = (grand_totals['total_vehicles'] / total_lanes_with_exemptions) if total_lanes_with_exemptions > 0 else 0
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="exempt_report_{start_date}_to_{end_date}.pdf"'
+        
+        # Use landscape orientation for wide table
+        doc = SimpleDocTemplate(response, pagesize=landscape(A4))
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Title with different font sizes and closer spacing
+        title_style = styles['Title'].clone('TitleStyle')
+        title_style.spaceAfter = 6  # Reduced space after title
+        title = Paragraph('''
+        <font size="16"><b>Shaheed Wasim Akram Expressway</b></font><br/>
+        <font size="12">Patenga Toll Plaza</font><br/>
+        <font size="12">Exempt Traffic Summary Report</font>
+        ''', title_style)
+        elements.append(title)
+        
+        # Date range - centered with smaller font and reduced spacing
+        date_style = styles['Normal'].clone('DateStyle')
+        date_style.alignment = 1  # Center alignment
+        date_style.fontSize = 10
+        date_style.spaceBefore = 6  # Reduced space before
+        date_style.spaceAfter = 6   # Reduced space after
+        date_para = Paragraph(f'<b>Period:</b> {start_date} {start_time} to {end_date} {end_time}', date_style)
+        elements.append(date_para)
+        
+        # Gap between period and table
+        elements.append(Paragraph('<br/><br/>', styles['Normal']))
+        
+        # Create table headers
+        headers = ['S/N', 'Lane']
+        for vc in sorted(all_vehicle_classes):
+            headers.append(vehicle_class_displays[vc])
+        headers.append('Total Exempted')
+        
+        data = [headers]
+        
+        # Add data rows
+        for i, lane in enumerate(exempt_summary, 1):
+            row = [str(i), lane['lane_display']]
+            for vc in sorted(all_vehicle_classes):
+                row.append(str(lane['classes'].get(vc, 0)))
+            row.append(str(lane['total_vehicles']))
+            data.append(row)
+        
+        # Add grand total row
+        total_row = ['', 'Grand Total']
+        for vc in sorted(all_vehicle_classes):
+            total_row.append(str(grand_totals['classes'].get(vc, 0)))
+        total_row.append(str(grand_totals['total_vehicles']))
+        data.append(total_row)
+        
+        # Create table with lighter borders and header
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -2), colors.white),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ]))
+        
+        elements.append(table)
+        
+        # Gap between table and summary statistics
+        elements.append(Paragraph('<br/><br/>', styles['Normal']))
+        
+        # Summary Statistics - after table
+        summary_para = Paragraph(f'''
+        <b>Summary Statistics:</b><br/>
+        Total Exempt Vehicles: {grand_totals['total_vehicles']:,}<br/>
+        Total Lanes with Exemptions: {total_lanes_with_exemptions}<br/>
+        Total Vehicle Classes: {len(all_vehicle_classes)}<br/>
+        Average Exemptions per Lane: {average_exemptions_per_lane:.2f}
+        ''', styles['Normal'])
+        elements.append(summary_para)
+        
+        doc.build(elements)
+        
+        return response
+    
+    return redirect('exempt_report')
+
+
+@login_required
 def get_image_view(request, transaction_id):
     """Get transaction image - serves binary image data directly for AJAX requests"""
     try:
@@ -644,3 +1116,39 @@ def get_exempt_by_class_count(vehicle_class, lane, max_date, min_date):
     ).count()
     
     return count if count else 0
+
+
+def login_view(request):
+    """Login view for toll system users"""
+    if request.user.is_authenticated:
+        return redirect('transactions:overview')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        if username and password:
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'Welcome back, {user.name}!')
+                
+                # Redirect to next page or default
+                next_url = request.POST.get('next') or request.GET.get('next')
+                if next_url:
+                    return redirect(next_url)
+                return redirect('transactions:overview')
+            else:
+                messages.error(request, 'Invalid username or password. Please check your credentials.')
+        else:
+            messages.error(request, 'Please enter both username and password.')
+    
+    return render(request, 'auth/login.html')
+
+def logout_view(request):
+    """Logout view"""
+    user_name = request.user.name if request.user.is_authenticated else None
+    logout(request)
+    if user_name:
+        messages.success(request, f'Goodbye, {user_name}! You have been logged out.')
+    return redirect('transactions:login')

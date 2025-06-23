@@ -141,6 +141,51 @@
         padding: 3rem;
         color: #7f8c8d;
     }
+
+    .text-center {
+        text-align: center;
+    }
+    
+    .summary-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+    
+    .summary-title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-card h4 {
+        margin: 0 0 10px 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #fff;
+    }
 </style>
 {% endblock %}
 
@@ -200,6 +245,43 @@
                     <h4>No exempt transactions found for the selected period.</h4>
                 </div>
             {% endif %}
+        </div>
+        
+        <!-- Summary Statistics Section -->
+        <div class="summary-section">
+            <h3 class="summary-title">Summary Statistics</h3>
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h4>Total Exempt Vehicles</h4>
+                    <div class="stat-value">{{ summary_stats.total_exempt_vehicles|floatformat:0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Lanes with Exemptions</h4>
+                    <div class="stat-value">{{ summary_stats.total_lanes_with_exemptions }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Vehicle Classes</h4>
+                    <div class="stat-value">{{ summary_stats.total_vehicle_classes }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Avg Exemptions per Lane</h4>
+                    <div class="stat-value">{{ summary_stats.average_exemptions_per_lane|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Download Section -->
+        <div class="download-section" style="margin-top: 20px; text-align: center;">
+            <form method="post" action="{% url 'transactions:exempt_pdf' %}" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="startDate" value="{{ start_date }}">
+                <input type="hidden" name="endDate" value="{{ end_date }}">
+                <input type="hidden" name="startTime" value="{{ start_time }}">
+                <input type="hidden" name="endTime" value="{{ end_time }}">
+                <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                    <i class="fas fa-download"></i> Download PDF Report
+                </button>
+            </form>
         </div>
     </div>
 </div>

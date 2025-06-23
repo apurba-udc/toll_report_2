@@ -763,8 +763,20 @@
         
         <!-- Sidebar Header -->
         <div class="sidebar-header">
-            <h2><i class="fa fa-chart-bar"></i> Toll System</h2>
-            <p>Transaction Management & Analytics</p>
+            <h2><i class="fa fa-road"></i> Toll System</h2>
+            <p>Transaction Management & Reports</p>
+            {% if user.is_authenticated %}
+                <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.1); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                    <div style="color: #ffffff; font-size: 0.9rem;">
+                        <i class="fa fa-user" style="margin-right: 5px;"></i>
+                        <strong>{{ user.name|default:user.username }}</strong>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.8); font-size: 0.8rem; margin-top: 3px;">
+                        <i class="fa fa-tag" style="margin-right: 5px;"></i>
+                        Role: {{ user.role|title }}
+                    </div>
+                </div>
+            {% endif %}
         </div>
         
         <!-- Sidebar Content -->
@@ -800,11 +812,17 @@
             <div class="menu-section">
                 <h3><i class="fa fa-cog"></i> System & Settings</h3>
                 <ul class="menu-links">
-                    <li><a href="/admin/"><i class="fa fa-user-shield"></i> Admin Panel</a></li>
+                    {% if user.is_authenticated and user.role|upper == 'ADMIN' %}
+                        <li><a href="/admin/"><i class="fa fa-user-shield"></i> Admin Panel</a></li>
+                    {% endif %}
                     <li><a href="#" onclick="window.print()"><i class="fa fa-print"></i> Print Current Page</a></li>
                     <li><a href="#" onclick="location.reload()"><i class="fa fa-refresh"></i> Refresh Page</a></li>
-                    <li><a href="/admin/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
-                    </ul>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'transactions:logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'transactions:login' %}"><i class="fa fa-sign-in-alt"></i> Login</a></li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </div>

@@ -6,7 +6,6 @@ import os
 import sys
 import django
 from django.core.management import execute_from_command_line
-from django.core.management.commands.runserver import Command as RunserverCommand
 from django.conf import settings
 
 # Add the project directory to the Python path
@@ -55,20 +54,25 @@ def run_ssl_server():
         print(f"Error creating combined certificate: {e}")
         return
     
+    # Get server address from command line arguments
+    server_addr = '115.127.158.186:443'  # Default
+    if len(sys.argv) > 1:
+        server_addr = sys.argv[1]
+    
     # Run the server with SSL
     try:
         print("Starting Django server with SSL...")
         print(f"Certificate: {combined_cert_path}")
         print(f"Private Key: {private_key}")
-        print("Server will be available at: https://toll.sdlbdcloud.com:8000")
+        print(f"Server will be available at: https://{server_addr}")
         print("Press Ctrl+C to stop the server")
         
         # Use Django's runserver command with SSL
         execute_from_command_line([
-            'manage.py', 'runserver_plus',
+            'manage.py', 'runsslserver',
             '--cert', combined_cert_path,
             '--key-file', private_key,
-            'toll.sdlbdcloud.com:8000'
+            server_addr
         ])
         
     except KeyboardInterrupt:

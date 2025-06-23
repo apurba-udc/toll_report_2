@@ -33,9 +33,9 @@ def home_view(request):
 @login_required
 def daily_report(request):
     """Daily report view - equivalent to Laravel dailyReport() method"""
-    # Get current date for default values
-    today = date.today()
-    current_date_str = today.strftime('%Y-%m-%d')
+    # Get current date for default values - use local date for form display
+    current_date = date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
@@ -43,19 +43,18 @@ def daily_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -119,9 +118,9 @@ def daily_report(request):
 @login_required
 def lane_shift_report(request):
     """Lane shift report - equivalent to Laravel laneShiftReport() method"""
-    # Get current date for default values
-    today = date.today()
-    current_date_str = today.strftime('%Y-%m-%d')
+    # Get current date for default values - use local date for form display
+    current_date = date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
@@ -142,19 +141,18 @@ def lane_shift_report(request):
         elif p_type == 'Exempt':
             p_type = 'VCH'
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -239,9 +237,9 @@ def lane_shift_report(request):
 @login_required
 def lane_wise_report(request):
     """Lane wise revenue summary - equivalent to Laravel laneWiseReport() method"""
-    # Get current date for default values
-    today = date.today()
-    current_date_str = today.strftime('%Y-%m-%d')
+    # Get current date for default values - use local date for form display
+    current_date = date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
@@ -249,19 +247,18 @@ def lane_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -354,19 +351,18 @@ def lane_wise_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -551,9 +547,9 @@ def get_lane_display(lane_code):
 @login_required
 def lane_class_wise_report(request):
     """Cash transactions summary with detailed class breakdown - equivalent to Laravel laneClassWiseReport() method"""
-    # Get current date for default values
-    today = date.today()
-    current_date_str = today.strftime('%Y-%m-%d')
+    # Get current date for default values - use local date for form display
+    current_date = date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
@@ -561,19 +557,18 @@ def lane_class_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -689,19 +684,18 @@ def lane_class_wise_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -876,9 +870,9 @@ def lane_class_wise_report_pdf(request):
 @login_required
 def exempt_report(request):
     """Exempt transaction report - equivalent to Laravel lane() method"""
-    # Get current date for default values
-    today = date.today()
-    current_date_str = today.strftime('%Y-%m-%d')
+    # Get current date for default values - use local date for form display
+    current_date = date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
@@ -886,19 +880,18 @@ def exempt_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -1026,19 +1019,18 @@ def exempt_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Parse dates and times as UTC (database timezone) for accurate filtering
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
-            # Parse to naive datetime objects first
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
-            # Make them UTC timezone-aware (database stores in UTC)
-            utc_tz = pytz.UTC
-            start_datetime = utc_tz.localize(start_datetime_naive)
-            end_datetime = utc_tz.localize(end_datetime_naive)
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
             # Fallback to string format if parsing fails
@@ -1345,15 +1337,15 @@ def logout_view(request):
 @login_required
 def system_date_check(request):
     """Utility view to check current system date"""
-    current_date = date.today()
-    current_datetime = datetime.now()
+    current_datetime = timezone.now()
+    current_date = current_datetime.date()
     
     data = {
         'current_date': current_date.strftime('%Y-%m-%d'),
         'current_datetime': current_datetime.strftime('%Y-%m-%d %H:%M:%S'),
         'formatted_date': current_date.strftime('%B %d, %Y'),
         'day_of_week': current_date.strftime('%A'),
-        'timezone': str(current_datetime.astimezone().tzinfo)
+        'timezone': str(current_datetime.tzinfo)
     }
     
     if request.GET.get('format') == 'json':

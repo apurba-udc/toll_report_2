@@ -388,7 +388,7 @@
                         <tr data-sequence="{{ tran.sequence }}">
                             <td>{{ transactions|sequential_number:forloop.counter }}</td>
                             <td>{{ tran.sequence }}</td>
-                            <td>{{ tran.capturedate|date:"M d, Y" }} {{ tran.capturedate|time:"H:i" }}</td>
+                            <td>{{ tran.capturedate|utc_date:"M d, Y" }} {{ tran.capturedate|utc_time:"g:i A" }}</td>
                             <td>
                                 {% if tran.lane == 'L101' %}
                                     <span class="lane-text lane-l101">{{ tran.lane|default:"N/A" }}</span>

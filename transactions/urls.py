@@ -12,6 +12,9 @@ urlpatterns = [
     # Main pages
     path('', views.home_view, name='overview'),
     
+    # Utility URLs
+    path('system-date/', views.system_date_check, name='system_date_check'),
+    
     # Report pages
     path('report_date/', views.daily_report, name='report_date'),
     path('daily_report/', views.daily_report, name='daily_report'),

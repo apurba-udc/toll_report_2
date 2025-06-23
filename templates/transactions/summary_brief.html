@@ -175,6 +175,7 @@
                                    class="form-control" 
                                    id="startDate" 
                                    name="startDate" 
+                                   value="{{ default_start_date|default:'' }}"
                                    required>
                         </div>
                         
@@ -186,6 +187,7 @@
                                    class="form-control" 
                                    id="endDate" 
                                    name="endDate" 
+                                   value="{{ default_end_date|default:'' }}"
                                    required>
                         </div>
                     </div>
@@ -230,15 +232,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reset button state if user came back from report page
     resetButtonState();
     
-    // Set today's date as default in American format
-    var today = new Date();
-    var todayString = today.toISOString().split('T')[0];
+    // Use server-provided date or fallback to today's date
+    var serverDate = '{{ current_date|default:"" }}';
+    var today = serverDate || new Date().toISOString().split('T')[0];
     
-    // Set default values
-    document.getElementById('startDate').value = todayString;
-    document.getElementById('endDate').value = todayString;
+    // Set default values only if not already set by server
+    var startDateInput = document.getElementById('startDate');
+    var endDateInput = document.getElementById('endDate');
     
-    // Format date inputs to show American format
+    if (!startDateInput.value) {
+        startDateInput.value = today;
+    }
+    if (!endDateInput.value) {
+        endDateInput.value = today;
+    }
+    
+    // Format date inputs to show current format
     formatDateInputs();
     
     // Add form submission handler
@@ -249,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
     });
     
-    console.log('Revenue summary form loaded successfully');
+    console.log('Revenue summary form loaded with server date:', serverDate || 'fallback to client date');
 });
 
 // Handle browser back button and page reload from cache
@@ -274,8 +283,11 @@ function resetButtonState() {
 }
 
 function formatDateInputs() {
-    const today = new Date();
-    const formattedToday = today.toLocaleDateString('en-US', {
+    // Use the current input value or server date as the reference
+    var serverDate = '{{ current_date|default:"" }}';
+    var referenceDate = serverDate ? new Date(serverDate) : new Date();
+    
+    const formattedDate = referenceDate.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -283,9 +295,9 @@ function formatDateInputs() {
     
     const dateInputs = document.querySelectorAll('input[type="date"]');
     dateInputs.forEach(input => {
-        // Set placeholder attribute with American format
-        input.setAttribute('placeholder', formattedToday);
-        input.setAttribute('data-placeholder', formattedToday);
+        // Set placeholder attribute with current format
+        input.setAttribute('placeholder', formattedDate);
+        input.setAttribute('data-placeholder', formattedDate);
         
         // Create overlay for custom placeholder
         const wrapper = input.parentNode;
@@ -315,7 +327,7 @@ function formatDateInputs() {
             if (input.value) {
                 placeholderDiv.style.display = 'none';
             } else {
-                placeholderDiv.textContent = formattedToday;
+                placeholderDiv.textContent = formattedDate;
                 placeholderDiv.style.display = 'block';
             }
         }

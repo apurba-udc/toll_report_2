@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'mssql',
         'NAME': 'ZAKTOLL',
         'USER': 'online',
-        'PASSWORD': '123',
+        'PASSWORD': 'KFZ=123P',
         'HOST': '115.127.158.186',
         'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',

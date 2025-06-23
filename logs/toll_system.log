@@ -6,3 +6,5 @@ INFO 2025-06-23 21:56:37,306 middleware User 'admin' (ADMIN) accessed GET / from
 INFO 2025-06-23 21:57:52,814 middleware User 'admin' (ADMIN) accessed GET / from 27.147.160.50
 INFO 2025-06-23 21:57:58,779 middleware User 'admin' (ADMIN) accessed GET / from 27.147.160.50
 INFO 2025-06-23 21:59:16,092 middleware User 'admin' (ADMIN) accessed GET / from 27.147.160.50
+INFO 2025-06-24 00:33:55,044 middleware User 'admin' (ADMIN) accessed GET / from 27.147.160.50
+INFO 2025-06-24 00:33:58,562 middleware User 'admin' (ADMIN) accessed GET /logout/ from 27.147.160.50

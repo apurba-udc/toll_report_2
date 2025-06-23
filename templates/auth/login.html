@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Toll Report System</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -212,13 +214,8 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>🚗 Toll System</h1>
+            <h1>🚗 CDA Toll System</h1>
             <p>Access Control & Reporting</p>
-        </div>
-        
-        <div class="system-info">
-            <h2>ZAKTOLL Database</h2>
-            <p>Secure Transaction Management System</p>
         </div>
         
         {% if error %}
@@ -228,15 +225,6 @@
                 </div>
             </div>
         {% endif %}
-        
-        <div class="role-info">
-            <h4>Authorized Roles</h4>
-            <ul class="role-list">
-                <li><strong>Admin:</strong> Full system access</li>
-                <li><strong>Web Admin:</strong> Administrative functions</li>
-                <li><strong>Web User:</strong> Report viewing</li>
-            </ul>
-        </div>
         
         <form method="post" id="loginForm">
             {% csrf_token %}
@@ -278,8 +266,11 @@
         </form>
         
         <div class="footer-info">
-            <p>© 2024 Toll Report System</p>
-            <p>Secure database access for authorized personnel only</p>
+            <p>© 2025 Chittagong Development Authority</p>
+            <small class="text-muted">
+                <i class="fa fa-bolt"></i> Powered by SDL Cloud |
+                <i class="fa fa-rocket"></i> Optimized for Performance
+            </small>
         </div>
     </div>
     

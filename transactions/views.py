@@ -16,7 +16,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-from .models import Transaction
+from .models import Transaction, TollUser
 from django.urls import reverse
 
 
@@ -181,6 +181,10 @@ def lane_shift_report(request):
 @login_required
 def lane_wise_report(request):
     """Lane wise revenue summary - equivalent to Laravel laneWiseReport() method"""
+    # Get current date for default values
+    today = date.today()
+    current_date_str = today.strftime('%Y-%m-%d')
+    
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
         end_date = request.POST.get('endDate')
@@ -252,12 +256,19 @@ def lane_wise_report(request):
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Lane Wise Summary'
+            'title': 'Lane Wise Summary',
+            'current_date': current_date_str,
         }
         
         return render(request, 'transactions/lane_wise_report.html', context)
     
-    return render(request, 'transactions/summary_brief.html')
+    # For GET requests, provide current date as defaults
+    context = {
+        'current_date': current_date_str,
+        'default_start_date': current_date_str,
+        'default_end_date': current_date_str,
+    }
+    return render(request, 'transactions/summary_brief.html', context)
 
 
 @login_required
@@ -450,6 +461,10 @@ def get_lane_display(lane_code):
 @login_required
 def lane_class_wise_report(request):
     """Cash transactions summary with detailed class breakdown - equivalent to Laravel laneClassWiseReport() method"""
+    # Get current date for default values
+    today = date.today()
+    current_date_str = today.strftime('%Y-%m-%d')
+    
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
         end_date = request.POST.get('endDate')
@@ -545,12 +560,19 @@ def lane_class_wise_report(request):
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Lane & Class Wise Summary'
+            'title': 'Lane & Class Wise Summary',
+            'current_date': current_date_str,
         }
         
         return render(request, 'transactions/lane_class_wise_report.html', context)
     
-    return render(request, 'transactions/summary_detail.html')
+    # For GET requests, provide current date as defaults
+    context = {
+        'current_date': current_date_str,
+        'default_start_date': current_date_str,
+        'default_end_date': current_date_str,
+    }
+    return render(request, 'transactions/summary_detail.html', context)
 
 
 @login_required
@@ -734,6 +756,10 @@ def lane_class_wise_report_pdf(request):
 @login_required
 def exempt_report(request):
     """Exempt transaction report - equivalent to Laravel lane() method"""
+    # Get current date for default values
+    today = date.today()
+    current_date_str = today.strftime('%Y-%m-%d')
+    
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
         end_date = request.POST.get('endDate')
@@ -841,12 +867,19 @@ def exempt_report(request):
             'start_time': start_time,
             'end_time': end_time,
             'title': 'Exempt Traffic Summary',
-            'summary_stats': summary_stats
+            'summary_stats': summary_stats,
+            'current_date': current_date_str,
         }
         
         return render(request, 'transactions/exempt_report.html', context)
     
-    return render(request, 'transactions/exempt_details.html')
+    # For GET requests, provide current date as defaults
+    context = {
+        'current_date': current_date_str,
+        'default_start_date': current_date_str,
+        'default_end_date': current_date_str,
+    }
+    return render(request, 'transactions/exempt_details.html', context)
 
 
 @login_required
@@ -1157,3 +1190,31 @@ def logout_view(request):
     """Logout view"""
     logout(request)
     return redirect('transactions:login')
+
+@login_required
+def system_date_check(request):
+    """Utility view to check current system date"""
+    current_date = date.today()
+    current_datetime = datetime.now()
+    
+    data = {
+        'current_date': current_date.strftime('%Y-%m-%d'),
+        'current_datetime': current_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+        'formatted_date': current_date.strftime('%B %d, %Y'),
+        'day_of_week': current_date.strftime('%A'),
+        'timezone': str(current_datetime.astimezone().tzinfo)
+    }
+    
+    if request.GET.get('format') == 'json':
+        return JsonResponse(data)
+    
+    return HttpResponse(f"""
+    <h2>🕐 System Date & Time Check</h2>
+    <p><strong>Current Date:</strong> {data['current_date']}</p>
+    <p><strong>Current DateTime:</strong> {data['current_datetime']}</p>
+    <p><strong>Formatted Date:</strong> {data['formatted_date']}</p>
+    <p><strong>Day of Week:</strong> {data['day_of_week']}</p>
+    <p><strong>Timezone:</strong> {data['timezone']}</p>
+    <hr>
+    <p><a href="?format=json">View as JSON</a> | <a href="/">Back to Home</a></p>
+    """, content_type='text/html')

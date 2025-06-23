@@ -38,26 +38,20 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
     'transactions',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'transactions.middleware.ReadOnlyMiddleware',  # Custom read-only enforcement
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -73,7 +67,6 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -90,18 +83,24 @@ DATABASES = {
         'ENGINE': 'mssql',
         'NAME': 'ZAKTOLL',
         'USER': 'online',
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'KFZ=123P'),
+        'PASSWORD': '123',
         'HOST': '115.127.158.186',
-        'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',
-            'extra_params': 'TrustServerCertificate=yes;Encrypt=yes;',
+            'extra_params': 'TrustServerCertificate=yes;',
         },
     }
 }
 
-# Force MSSQL database usage only
 DATABASE_ROUTERS = ['transactions.db_router.ReadOnlyRouter']
+
+# Disable migrations completely for read-only operation
+MIGRATION_MODULES = {
+    'transactions': None,  # Disable migrations for transactions app
+    'auth': None,          # Disable auth migrations  
+    'contenttypes': None,  # Disable contenttypes migrations
+    'sessions': None,      # Disable sessions migrations
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -151,9 +150,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
-
 # CSRF Trusted Origins - Add this to fix origin checking
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
@@ -173,12 +169,6 @@ AUTHENTICATION_BACKENDS = [
     'transactions.auth_backends.TollUserBackend',
     'django.contrib.auth.backends.ModelBackend',  # Fallback
 ]
-
-# REST Framework settings
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25
-}
 
 # Login settings
 LOGIN_URL = '/login/'

@@ -1,0 +1,6 @@
+WARNING 2025-06-24 02:11:47,190 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 02:11:55,600 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 02:11:58,921 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 02:17:14,155 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 02:17:15,819 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 02:17:17,898 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin

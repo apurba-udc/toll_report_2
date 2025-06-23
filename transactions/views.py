@@ -219,6 +219,8 @@ def lane_shift_report(request):
             'startTime': start_time,
             'endTime': end_time,
             'lane': lane,
+            'vType': request.POST.get('vType', 'All'),
+            'pType': request.POST.get('pType', 'All'),
             'title': title,
             'current_date': current_date_str,
         }

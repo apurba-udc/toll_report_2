@@ -49,3 +49,33 @@ INFO 2025-06-24 02:09:03,453 middleware User 'admin' (ADMIN) accessed GET /summa
 INFO 2025-06-24 02:09:09,268 middleware User 'admin' (ADMIN) accessed POST /summary_class/ from 27.147.160.50
 INFO 2025-06-24 02:09:46,689 middleware User 'admin' (ADMIN) accessed GET /exempt/ from 27.147.160.50
 INFO 2025-06-24 02:09:51,921 middleware User 'admin' (ADMIN) accessed POST /exempt/ from 27.147.160.50
+INFO 2025-06-24 02:11:26,933 middleware User 'admin' (ADMIN) accessed GET / from 27.147.160.50
+INFO 2025-06-24 02:11:28,153 middleware User 'admin' (ADMIN) accessed GET /report_date/ from 27.147.160.50
+INFO 2025-06-24 02:11:33,621 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50
+INFO 2025-06-24 02:11:42,809 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50
+INFO 2025-06-24 02:11:45,723 middleware User 'admin' (ADMIN) accessed GET /report_date_lane/ from 27.147.160.50
+INFO 2025-06-24 02:11:47,190 middleware User 'admin' (ADMIN) accessed POST /daily_shift_report/ from 27.147.160.50
+WARNING 2025-06-24 02:11:47,190 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+INFO 2025-06-24 02:11:55,600 middleware User 'admin' (ADMIN) accessed POST /daily_shift_report/ from 27.147.160.50
+WARNING 2025-06-24 02:11:55,600 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+INFO 2025-06-24 02:11:58,921 middleware User 'admin' (ADMIN) accessed POST /daily_shift_report/ from 27.147.160.50
+WARNING 2025-06-24 02:11:58,921 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+INFO 2025-06-24 02:14:17,516 middleware User 'admin' (ADMIN) accessed GET /report_date/ from 27.147.160.50
+INFO 2025-06-24 02:14:23,551 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50
+INFO 2025-06-24 02:17:03,515 middleware User 'admin' (ADMIN) accessed GET / from 27.147.160.50
+INFO 2025-06-24 02:17:07,669 middleware User 'admin' (ADMIN) accessed GET /report_date_lane/ from 27.147.160.50
+INFO 2025-06-24 02:17:14,155 middleware User 'admin' (ADMIN) accessed POST /daily_shift_report/ from 27.147.160.50
+WARNING 2025-06-24 02:17:14,155 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+INFO 2025-06-24 02:17:15,819 middleware User 'admin' (ADMIN) accessed POST /daily_shift_report/ from 27.147.160.50
+WARNING 2025-06-24 02:17:15,819 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+INFO 2025-06-24 02:17:17,898 middleware User 'admin' (ADMIN) accessed POST /daily_shift_report/ from 27.147.160.50
+WARNING 2025-06-24 02:17:17,898 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+INFO 2025-06-24 02:17:21,121 middleware User 'admin' (ADMIN) accessed GET /summary_brief/ from 27.147.160.50
+INFO 2025-06-24 02:17:26,538 middleware User 'admin' (ADMIN) accessed POST /summary_lane/ from 27.147.160.50
+INFO 2025-06-24 02:17:31,678 middleware User 'admin' (ADMIN) accessed GET /summary_detail/ from 27.147.160.50
+INFO 2025-06-24 02:17:38,773 middleware User 'admin' (ADMIN) accessed POST /summary_class/ from 27.147.160.50
+INFO 2025-06-24 02:17:49,874 middleware User 'admin' (ADMIN) accessed GET /report_date/ from 27.147.160.50
+INFO 2025-06-24 02:17:55,543 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50
+INFO 2025-06-24 02:17:59,486 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50
+INFO 2025-06-24 02:18:01,553 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50
+INFO 2025-06-24 02:18:03,760 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 27.147.160.50

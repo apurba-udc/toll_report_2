@@ -213,6 +213,7 @@
                                    class="form-control" 
                                    id="startDate" 
                                    name="startDate" 
+                                   value="{{ default_start_date|default:'' }}"
                                    required>
                         </div>
                         
@@ -224,6 +225,7 @@
                                    class="form-control" 
                                    id="endDate" 
                                    name="endDate" 
+                                   value="{{ default_end_date|default:'' }}"
                                    required>
                         </div>
                     </div>
@@ -302,9 +304,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reset button state if user came back from report page
     resetButtonState();
     
-    // Set current date as default for both fields
-    setToday('startDate');
-    setToday('endDate');
+    // Use server-provided date or fallback to today's date
+    const serverDate = '{{ current_date|default:"" }}';
+    
+    // Set default dates only if not already set by server
+    if (!document.getElementById('startDate').value) {
+        if (serverDate) {
+            document.getElementById('startDate').value = serverDate;
+        } else {
+            setToday('startDate');
+        }
+    }
+    
+    if (!document.getElementById('endDate').value) {
+        if (serverDate) {
+            document.getElementById('endDate').value = serverDate;
+        } else {
+            setToday('endDate');
+        }
+    }
     
     // Format date inputs to show American format
     formatDateInputs();
@@ -327,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
     });
     
-    console.log('Daily report form loaded successfully');
+    console.log('Daily report form loaded with server date:', serverDate || 'fallback to client date');
 });
 
 // Handle browser back button and page reload from cache
@@ -352,8 +370,10 @@ function resetButtonState() {
 }
 
 function formatDateInputs() {
-    const today = new Date();
-    const formattedToday = today.toLocaleDateString('en-US', {
+    const serverDate = '{{ current_date|default:"" }}';
+    const referenceDate = serverDate ? new Date(serverDate) : new Date();
+    
+    const formattedToday = referenceDate.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'

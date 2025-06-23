@@ -29,6 +29,10 @@ def home_view(request):
 @login_required
 def daily_report(request):
     """Daily report view - equivalent to Laravel dailyReport() method"""
+    # Get current date for default values
+    today = date.today()
+    current_date_str = today.strftime('%Y-%m-%d')
+    
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
         end_date = request.POST.get('endDate')
@@ -78,17 +82,28 @@ def daily_report(request):
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Daily Transaction Report'
+            'title': 'Daily Transaction Report',
+            'current_date': current_date_str,
         }
         
         return render(request, 'transactions/daily_report.html', context)
     
-    return render(request, 'transactions/report_date.html')
+    # For GET requests, provide current date as defaults
+    context = {
+        'current_date': current_date_str,
+        'default_start_date': current_date_str,
+        'default_end_date': current_date_str,
+    }
+    return render(request, 'transactions/report_date.html', context)
 
 
 @login_required
 def lane_shift_report(request):
     """Lane shift report - equivalent to Laravel laneShiftReport() method"""
+    # Get current date for default values
+    today = date.today()
+    current_date_str = today.strftime('%Y-%m-%d')
+    
     if request.method == 'POST':
         start_date = request.POST.get('startDate')
         end_date = request.POST.get('endDate')
@@ -170,12 +185,19 @@ def lane_shift_report(request):
             'startTime': start_time,
             'endTime': end_time,
             'lane': lane,
-            'title': title
+            'title': title,
+            'current_date': current_date_str,
         }
         
         return render(request, 'transactions/lane_shift_report.html', context)
     
-    return render(request, 'transactions/report_date_lane.html')
+    # For GET requests, provide current date as defaults
+    context = {
+        'current_date': current_date_str,
+        'default_start_date': current_date_str,
+        'default_end_date': current_date_str,
+    }
+    return render(request, 'transactions/report_date_lane.html', context)
 
 
 @login_required

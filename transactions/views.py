@@ -18,6 +18,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from .models import Transaction, TollUser
 from django.urls import reverse
+from django.utils import timezone
+import pytz
 
 
 @login_required
@@ -39,11 +41,28 @@ def daily_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Combine date and time
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly using datetime objects
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Parse to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed (assuming local timezone)
+            if timezone.is_aware(start_datetime):
+                pass  # Already timezone aware
+            else:
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+        except ValueError as e:
+            # Fallback to string format if parsing fails
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
-        # Filter transactions
+        # Filter transactions using precise datetime comparison
         transactions = Transaction.objects.filter(
             capturedate__gte=start_datetime,
             capturedate__lte=end_datetime
@@ -123,11 +142,28 @@ def lane_shift_report(request):
         elif p_type == 'Exempt':
             p_type = 'VCH'
         
-        # Combine date and time
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly using datetime objects
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Parse to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed (assuming local timezone)
+            if timezone.is_aware(start_datetime):
+                pass  # Already timezone aware
+            else:
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+        except ValueError as e:
+            # Fallback to string format if parsing fails
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
-        # Build query
+        # Build query with precise datetime comparison
         transactions = Transaction.objects.filter(
             capturedate__gte=start_datetime,
             capturedate__lte=end_datetime
@@ -213,8 +249,26 @@ def lane_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly using datetime objects
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Parse to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed (assuming local timezone)
+            if timezone.is_aware(start_datetime):
+                pass  # Already timezone aware
+            else:
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+        except ValueError as e:
+            # Fallback to string format if parsing fails
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
         base_query = Transaction.objects.filter(
             capturedate__gte=start_datetime,
@@ -302,8 +356,26 @@ def lane_wise_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly using datetime objects
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Parse to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed (assuming local timezone)
+            if timezone.is_aware(start_datetime):
+                pass  # Already timezone aware
+            else:
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+        except ValueError as e:
+            # Fallback to string format if parsing fails
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
         base_query = Transaction.objects.filter(
             capturedate__gte=start_datetime,
@@ -493,9 +565,26 @@ def lane_class_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Combine date and time
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly using datetime objects
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Parse to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed (assuming local timezone)
+            if timezone.is_aware(start_datetime):
+                pass  # Already timezone aware
+            else:
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+        except ValueError as e:
+            # Fallback to string format if parsing fails
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
         base_transactions = Transaction.objects.filter(
             capturedate__gte=start_datetime,
@@ -606,9 +695,26 @@ def lane_class_wise_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Combine date and time
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly using datetime objects
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Parse to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed (assuming local timezone)
+            if timezone.is_aware(start_datetime):
+                pass  # Already timezone aware
+            else:
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+        except ValueError as e:
+            # Fallback to string format if parsing fails
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
         
         base_transactions = Transaction.objects.filter(
             capturedate__gte=start_datetime,
@@ -788,9 +894,23 @@ def exempt_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Combine date and time
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Convert to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed
+            if timezone.is_aware(Transaction.objects.first().capturedate if Transaction.objects.exists() else datetime.now()):
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+        except (ValueError, AttributeError):
+            # Fallback to string format if parsing fails
+            start_datetime = start_datetime_str
+            end_datetime = end_datetime_str
         
         # Get all lanes that have exempt transactions
         all_lanes = Transaction.objects.filter(
@@ -913,8 +1033,23 @@ def exempt_report_pdf(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        start_datetime = f"{start_date} {start_time}"
-        end_datetime = f"{end_date} {end_time}"
+        # Parse dates and times properly
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            # Convert to datetime objects for precise filtering
+            start_datetime = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            # Make timezone aware if needed
+            if timezone.is_aware(Transaction.objects.first().capturedate if Transaction.objects.exists() else datetime.now()):
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+        except (ValueError, AttributeError):
+            # Fallback to string format if parsing fails
+            start_datetime = start_datetime_str
+            end_datetime = end_datetime_str
         
         # Get all lanes that have exempt transactions
         all_lanes = Transaction.objects.filter(

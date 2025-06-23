@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
 {% load image_filters %}
+{% load transactions_extras %}
 
 {% block title %}Daily Transaction Report - Toll Management System{% endblock %}
+
+{% block menu_toggle %}{% endblock %}
+
+{% block floating_nav %}
+{% include 'floating_nav.html' %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -17,6 +24,60 @@
         margin: 0 auto;
     }
     
+    .report-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    
+    .report-header {
+        padding: 15px 20px;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .report-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        color: #3a506b;
+        letter-spacing: 0.5px;
+    }
+    
+    .report-header h2 {
+        font-size: 1.4rem;
+        font-weight: 400;
+        margin: 0 0 5px 0;
+        color: #4a6fa5;
+    }
+    
+    .report-header h3 {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0 0 10px 0;
+        color: #5a7d9a;
+    }
+    
+    .report-header p {
+        font-size: 0.9rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #495057;
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 6px 15px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .report-header .fa-calendar {
+        margin-right: 8px;
+        color: #495057;
+    }
+    
     h1 {
         color: white;
         text-align: center;
@@ -25,12 +86,7 @@
     }
     
     .transactions-table {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
+        overflow-x: auto;
     }
     
     .table {
@@ -41,22 +97,32 @@
     }
     
     .table thead th {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
+        background-color: #e9ecef;
+        color: #212529;
         border: none;
-        padding: 0.8rem 0.5rem;
-        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.8rem 0.3rem;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
-        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
         text-align: center;
     }
     
+    .table thead th:nth-child(6) {
+        min-width: 100px;
+        width: 100px;
+    }
+    
     .table tbody td {
-        padding: 0.6rem 0.4rem;
+        padding: 0.4rem 0.3rem;
         vertical-align: middle;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        border-top: 1px solid rgba(0, 0, 0, 0.15);
         text-align: center;
+        line-height: 1.2;
+        font-size: 0.8rem;
+        color: #000;
+        font-weight: 400;
     }
     
     .table tbody tr:hover {
@@ -64,54 +130,85 @@
     }
     
     .sequence-number {
-        font-weight: 700;
-        color: #2c3e50;
-        font-size: 0.9rem;
+        font-weight: 600;
+        color: #212529;
+        font-size: 0.8rem;
     }
     
-    .lane-info {
-        background: #667eea;
-        color: white;
-        padding: 0.2rem 0.4rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.7rem;
+    .lane-text {
+        font-weight: 500;
+        font-size: 0.8rem;
     }
+    
+    .lane-l101 { color: #e74c3c; }
+    .lane-l102 { color: #3498db; }
+    .lane-l103 { color: #2ecc71; }
+    .lane-l104 { color: #f39c12; }
+    .lane-l105 { color: #9b59b6; }
+    .lane-l106 { color: #1abc9c; }
+    .lane-l107 { color: #e67e22; }
+    .lane-l108 { color: #34495e; }
+    .lane-default { color: #7f8c8d; }
     
     .vehicle-class {
         background: #ecf0f1;
         color: #2c3e50;
-        padding: 0.2rem 0.4rem;
-        border-radius: 8px;
+        padding: 0.15rem 0.3rem;
+        border-radius: 6px;
         font-weight: 600;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
     }
     
-    .payment-badge {
-        padding: 2px 6px;
-        border-radius: 5px;
-        font-size: 0.7rem;
+    .registration-number {
+        color: #212529;
         font-weight: 600;
+        font-size: 0.8rem;
+        white-space: nowrap;
     }
     
-    .payment-cash { background: #2ecc71; color: white; }
-    .payment-exempt { background: #e74c3c; color: white; }
-    .payment-etc { background: #3498db; color: white; }
-    .payment-tng { background: #f39c12; color: white; }
+    .vehicle-class-text {
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+    
+    .class-1 { color: #e74c3c !important; }    /* Motorcycle - Red */
+    .class-2 { color: #3498db !important; }    /* Car - Blue */
+    .class-3 { color: #2ecc71 !important; }    /* Small Truck - Green */
+    .class-4 { color: #f39c12 !important; }    /* Medium Truck - Orange */
+    .class-5 { color: #9b59b6 !important; }    /* Large Truck - Purple */
+    .class-6 { color: #1abc9c !important; }    /* Bus - Teal */
+    .class-7 { color: #e67e22 !important; }    /* Large Bus - Dark Orange */
+    .class-8 { color: #34495e !important; }    /* Trailer - Dark Gray */
+    .class-9 { color: #8e44ad !important; }    /* Multi-Axle - Dark Purple */
+    .class-default { color: #7f8c8d !important; } /* Others - Gray */
+    
+    .payment-text {
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    
+    .payment-cash { color: #27ae60; }
+    .payment-exempt { color: #e74c3c; }
+    .payment-etc { color: #3498db; }
+    .payment-tng { color: #f39c12; }
+    .payment-other { color: #95a5a6; }
     
     .image-container {
-        text-align: center;
-        width: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
     }
     
     .vehicle-image {
-        width: 50px;
-        height: 35px;
+        width: 35px;
+        height: 25px;
         object-fit: cover;
-        border-radius: 5px;
+        border-radius: 4px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     
     .vehicle-image:hover {
@@ -120,15 +217,15 @@
     }
     
     .image-placeholder {
-        width: 50px;
-        height: 35px;
+        width: 35px;
+        height: 25px;
         background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
-        border-radius: 5px;
+        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1rem;
+        font-size: 0.8rem;
         margin: 0 auto;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -210,21 +307,24 @@
         min-height: 20px;
     }
     
-
-    
     @media (max-width: 768px) {
         .table {
             font-size: 0.7rem;
         }
         
+        .report-header h1 { font-size: 1.5rem; }
+        .report-header h2 { font-size: 1.2rem; }
+        .report-header h3 { font-size: 1rem; }
+        .report-header p { font-size: 0.8rem; }
+        
         .table thead th,
         .table tbody td {
-            padding: 0.4rem 0.2rem;
+            padding: 0.3rem 0.15rem;
         }
         
         .vehicle-image, .image-placeholder {
-            width: 40px;
-            height: 30px;
+            width: 30px;
+            height: 20px;
         }
         
         .loading-spinner {
@@ -233,78 +333,120 @@
             margin: 9px auto;
         }
         
-
+        .registration-number {
+            font-size: 0.6rem;
+        }
+        
+        .vehicle-class-text {
+            font-size: 0.7rem;
+        }
+        
+        .sequence-number {
+            font-size: 0.7rem;
+        }
+        
+        .lane-text {
+            font-size: 0.7rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
     <div class="container">
-    <h1>🚗 Daily Transaction Report</h1>
+        <div class="report-container">
+            <div class="report-header">
+                <h1>Shaheed Wasim Akram Expressway</h1>
+                <h2>Patenga Toll Plaza</h2>
+                <h3>Transaction Details</h3>
+                {% if startDate and endDate %}
+                    <p>
+                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                        {{ startDate }} {{ startTime }} to {{ endDate }} {{ endTime }}
+                    </p>
+                {% endif %}
+            </div>
     
-    <div class="transactions-table">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>S/N</th>
-                    <th>Sequence</th>
-                    <th>Date & Time</th>
-                    <th>Lane</th>
-                    <th>Class</th>
-                    <th>Registration</th>
-                    <th>Payment</th>
-                    <th>Fare</th>
-                    <th>Collector</th>
-                    <th>Image</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for tran in transactions %}
-                <tr>
-                    <td><span class="sequence-number">{{ forloop.counter }}</span></td>
-                    <td><span class="sequence-number">{{ tran.sequence }}</span></td>
-                    <td>{{ tran.capturedate|date:"M d" }}<br><small>{{ tran.capturedate|time:"H:i" }}</small></td>
-                    <td><span class="lane-info">{{ tran.lane|default:"N/A" }}</span></td>
-                    <td><span class="vehicle-class">{{ tran.vehicle_class }}</span></td>
-                    <td><small>{{ tran.regnumber|default:"N/A"|truncatechars:8 }}</small></td>
-                    <td>
-                        {% if tran.paytype == 'CSH' %}
-                            <span class="payment-badge payment-cash">Cash</span>
-                        {% elif tran.paytype == 'VCH' %}
-                            <span class="payment-badge payment-exempt">Exempt</span>
-                        {% elif tran.paytype == 'ETC' %}
-                            <span class="payment-badge payment-etc">ETC</span>
-                        {% elif tran.paytype == 'TnG' %}
-                            <span class="payment-badge payment-tng">TnG</span>
-                        {% else %}
-                            <span class="payment-badge" style="background: #95a5a6; color: white;">{{ tran.paytype }}</span>
-                        {% endif %}
-                    </td>
-                    <td><strong>৳{{ tran.fare|format_currency }}</strong></td>
-                    <td><small>{{ tran.collectorid|default:"N/A"|truncatechars:6 }}</small></td>
-                    <td>
-                        <div class="image-container">
-                            <div class="loading-spinner" id="loading-{{ tran.sequence }}" style="display: none;"></div>
-                            <div class="image-placeholder" id="placeholder-{{ tran.sequence }}" onclick="loadVehicleImage('{{ tran.sequence }}')">
-                                📷
-                    </div>
-                            <!-- Direct image link as fallback -->
-                            <a href="/api/image/{{ tran.sequence }}/" target="_blank" style="display: block; margin-top: 2px; font-size: 0.6rem; color: #3498db; text-decoration: none;">
-                                Direct
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="10" style="text-align: center; padding: 2rem; color: #7f8c8d;">
-                        <strong>No transactions found</strong><br>
-                        <small>Try adjusting your filters or date range</small>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+            <div class="transactions-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Sequence</th>
+                            <th>Date & Time</th>
+                            <th>Lane</th>
+                            <th>Vehicle Type</th>
+                            <th>Registration</th>
+                            <th>Payment</th>
+                            <th>Fare</th>
+                            <th>Collector</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tran in transactions %}
+                        <tr data-sequence="{{ tran.sequence }}">
+                            <td>{{ transactions|sequential_number:forloop.counter }}</td>
+                            <td>{{ tran.sequence }}</td>
+                            <td>{{ tran.capturedate|date:"M d, Y" }} {{ tran.capturedate|time:"H:i" }}</td>
+                            <td>
+                                {% if tran.lane == 'L101' %}
+                                    <span class="lane-text lane-l101">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L102' %}
+                                    <span class="lane-text lane-l102">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L103' %}
+                                    <span class="lane-text lane-l103">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L104' %}
+                                    <span class="lane-text lane-l104">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L105' %}
+                                    <span class="lane-text lane-l105">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L106' %}
+                                    <span class="lane-text lane-l106">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L107' %}
+                                    <span class="lane-text lane-l107">{{ tran.lane|default:"N/A" }}</span>
+                                {% elif tran.lane == 'L108' %}
+                                    <span class="lane-text lane-l108">{{ tran.lane|default:"N/A" }}</span>
+                                {% else %}
+                                    <span class="lane-text lane-default">{{ tran.lane|default:"N/A" }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ tran.transtype|default:"N/A" }}</td>
+                            <td style="white-space: nowrap;">{{ tran.regnumber|default:"N/A" }}</td>
+                            <td>
+                                {% if tran.paytype == 'CSH' %}
+                                    <span class="payment-text payment-cash">Cash</span>
+                                {% elif tran.paytype == 'VCH' %}
+                                    <span class="payment-text payment-exempt">Exempt</span>
+                                {% elif tran.paytype == 'ETC' %}
+                                    <span class="payment-text payment-etc">ETC</span>
+                                {% elif tran.paytype == 'TnG' %}
+                                    <span class="payment-text payment-tng">TnG</span>
+                                {% else %}
+                                    <span class="payment-text payment-other">{{ tran.paytype }}</span>
+                                {% endif %}
+                            </td>
+                            <td>৳{{ tran.fare|floatformat:"0" }}</td>
+                            <td>{{ tran.collectorid|default:"N/A"|truncatechars:5 }}</td>
+                            <td>
+                                <div class="image-container">
+                                    <div class="loading-spinner" id="loading-{{ tran.sequence }}" style="display: none;"></div>
+                                    <div class="image-placeholder" id="placeholder-{{ tran.sequence }}" onclick="loadVehicleImage('{{ tran.sequence }}')">
+                                        📷
+                            </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                                <strong>No transactions found</strong><br>
+                                <small>Try adjusting your filters or date range</small>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->
@@ -416,11 +558,36 @@ function loadVehicleImage(sequenceId) {
             
             var content = '<!DOCTYPE html><html><head><title>Vehicle Image - Sequence ' + sequenceId + '</title>';
             content += '<style>body{margin:0;padding:20px;background:#667eea;text-align:center;font-family:Arial,sans-serif;}';
-            content += 'img{max-width:95%;max-height:80vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3);}';
-            content += 'h2{color:white;margin-bottom:20px;}';
+            content += 'img{max-width:95%;max-height:60vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3);margin-top:20px;}';
             content += 'button{background:#27ae60;color:white;border:none;padding:12px 24px;border-radius:6px;cursor:pointer;font-size:16px;margin-top:20px;}';
-            content += 'button:hover{background:#2ecc71;}</style></head><body>';
-            content += '<h2>🚗 গাড়ির ছবি - সিকুয়েন্স: ' + sequenceId + '</h2>';
+            content += 'button:hover{background:#2ecc71;}';
+            content += '.details-container{display:flex;justify-content:center;margin-bottom:20px;}';
+            content += '.details-column{background:rgba(255,255,255,0.95);border-radius:8px;padding:15px;margin:0 10px;min-width:200px;}';
+            content += '.detail-row{margin-bottom:8px;text-align:left;}';
+            content += '.detail-label{font-weight:bold;color:#2c3e50;font-size:14px;}';
+            content += '.detail-value{color:#34495e;font-size:13px;margin-left:5px;}';
+            content += '</style></head><body>';
+            
+            // Get transaction details from the current row
+            var row = document.querySelector('tr[data-sequence="' + sequenceId + '"]');
+            if (row) {
+                var cells = row.cells;
+                content += '<div class="details-container">';
+                content += '<div class="details-column">';
+                content += '<div class="detail-row"><span class="detail-label">Sequence:</span><span class="detail-value">' + (cells[1] ? cells[1].textContent.trim() : 'N/A') + '</span></div>';
+                content += '<div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">' + (cells[2] ? cells[2].textContent.trim() : 'N/A') + '</span></div>';
+                content += '<div class="detail-row"><span class="detail-label">Lane:</span><span class="detail-value">' + (cells[3] ? cells[3].textContent.trim() : 'N/A') + '</span></div>';
+                content += '<div class="detail-row"><span class="detail-label">Vehicle Type:</span><span class="detail-value">' + (cells[4] ? cells[4].textContent.trim() : 'N/A') + '</span></div>';
+                content += '</div>';
+                content += '<div class="details-column">';
+                content += '<div class="detail-row"><span class="detail-label">Registration:</span><span class="detail-value">' + (cells[5] ? cells[5].textContent.trim() : 'N/A') + '</span></div>';
+                content += '<div class="detail-row"><span class="detail-label">Payment:</span><span class="detail-value">' + (cells[6] ? cells[6].textContent.trim() : 'N/A') + '</span></div>';
+                content += '<div class="detail-row"><span class="detail-label">Fare:</span><span class="detail-value">' + (cells[7] ? cells[7].textContent.trim() : 'N/A') + '</span></div>';
+                content += '<div class="detail-row"><span class="detail-label">Collector:</span><span class="detail-value">' + (cells[8] ? cells[8].textContent.trim() : 'N/A') + '</span></div>';
+                content += '</div>';
+                content += '</div>';
+            }
+            
             content += '<img src="' + imageUrl + '" alt="Vehicle Image">';
             content += '<br><button onclick="window.close()">বন্ধ করুন</button>';
             content += '</body></html>';

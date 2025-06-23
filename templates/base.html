@@ -312,10 +312,25 @@
         
         /* Content area */
         .content-wrapper {
-            min-height: 100vh;
-            padding: 2rem 0;
+            min-height: calc(100vh - 80px);
+            padding: 1.5rem 0 0.5rem 0;
             position: relative;
             z-index: 1;
+        }
+        
+        /* Optimize content for form pages */
+        @media (max-height: 800px) {
+            .content-wrapper {
+                padding: 1rem 0 0.3rem 0;
+                min-height: calc(100vh - 60px);
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .content-wrapper {
+                padding: 0.5rem 0 0.2rem 0;
+                min-height: calc(100vh - 40px);
+            }
         }
         
         /* Floating Animation Elements */
@@ -482,11 +497,90 @@
         
         /* Footer */
         .footer {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 2rem 0;
+            padding: 0.5rem 0;
             text-align: center;
-            margin-top: 3rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            line-height: 1.2;
+            position: relative;
+            min-height: auto;
+        }
+        
+        .footer p {
+            margin-bottom: 0.2rem;
+            font-weight: 600;
+            margin-top: 0;
+        }
+        
+        .footer small {
+            opacity: 0.8;
+            font-size: 0.7rem;
+            line-height: 1.1;
+        }
+        
+        /* Compact footer for form pages */
+        @media (max-height: 800px) {
+            .footer {
+                padding: 0.3rem 0;
+                margin-top: 0.3rem;
+                font-size: 0.75rem;
+            }
+            
+            .footer p {
+                margin-bottom: 0.1rem;
+            }
+            
+            .footer small {
+                font-size: 0.65rem;
+            }
+        }
+        
+        /* Extra compact for small screens */
+        @media (max-height: 600px) {
+            .footer {
+                padding: 0.2rem 0;
+                margin-top: 0.2rem;
+                font-size: 0.7rem;
+            }
+            
+            .footer p, .footer small {
+                display: inline;
+                margin: 0;
+            }
+            
+            .footer p::after {
+                content: " | ";
+                opacity: 0.6;
+            }
+        }
+        
+        /* Form page optimizations */
+        .container {
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-container, .report-container {
+            margin-bottom: 0.5rem;
+        }
+        
+        .card {
+            margin-bottom: 1rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        @media (max-height: 800px) {
+            .card-body {
+                padding: 0.75rem;
+            }
+            
+            .container {
+                padding-bottom: 0.3rem;
+            }
         }
         
         /* Responsive optimizations */
@@ -497,7 +591,7 @@
             }
             
             .content-wrapper {
-                padding: 1rem 0;
+                padding: 1rem 0 0.3rem 0;
             }
             
             .container-fluid {
@@ -653,10 +747,12 @@
         <i class="fa fa-tachometer-alt"></i> Optimized
     </div>
 
-    <!-- Menu Toggle Button Only -->
+    <!-- Menu Toggle Button Only (Hidden in report pages) -->
+    {% block menu_toggle %}
     <button class="btn btn-outline-primary" type="button" id="menuToggle">
                     <i class="fa fa-bars"></i>
                 </button>
+    {% endblock %}
 
     <!-- Fixed Sidebar Menu - 25% Width, 100% Height -->
     <div class="fixed-sidebar" id="fixedSidebar">
@@ -678,8 +774,6 @@
                 <h3><i class="fa fa-home"></i> Main Navigation</h3>
                 <ul class="menu-links">
                     <li><a href="{% url 'transactions:overview' %}"><i class="fa fa-tachometer-alt"></i> Dashboard Overview</a></li>
-                    <li><a href="{% url 'transactions:transaction_list' %}"><i class="fa fa-list"></i> All Transactions</a></li>
-                    <li><a href="/admin/"><i class="fa fa-user-shield"></i> Admin Panel</a></li>
                 </ul>
             </div>
             
@@ -689,7 +783,6 @@
                 <ul class="menu-links">
                     <li><a href="{% url 'transactions:report_date' %}"><i class="fa fa-calendar-day"></i> Daily Transaction Report</a></li>
                     <li><a href="{% url 'transactions:report_date_lane' %}"><i class="fa fa-road"></i> Lane-wise Analysis</a></li>
-                    <li><a href="{% url 'transactions:exempt_details' %}"><i class="fa fa-ban"></i> Exempt Transactions</a></li>
                     </ul>
             </div>
             
@@ -699,7 +792,7 @@
                 <ul class="menu-links">
                     <li><a href="{% url 'transactions:summary_brief' %}"><i class="fa fa-money-bill-wave"></i> Revenue Summary</a></li>
                     <li><a href="{% url 'transactions:summary_detail' %}"><i class="fa fa-car"></i> Traffic Analysis</a></li>
-                    <li><a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); document.getElementById('fixedSidebar').classList.remove('show'); document.getElementById('menuToggle').classList.remove('active'); document.getElementById('sidebarOverlay').classList.remove('show');"><i class="fa fa-arrow-up"></i> Back to Top</a></li>
+                    <li><a href="{% url 'transactions:exempt_details' %}"><i class="fa fa-ban"></i> Exempt Transactions</a></li>
                     </ul>
             </div>
             
@@ -707,9 +800,10 @@
             <div class="menu-section">
                 <h3><i class="fa fa-cog"></i> System & Settings</h3>
                 <ul class="menu-links">
-                    <li><a href="/admin/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+                    <li><a href="/admin/"><i class="fa fa-user-shield"></i> Admin Panel</a></li>
                     <li><a href="#" onclick="window.print()"><i class="fa fa-print"></i> Print Current Page</a></li>
                     <li><a href="#" onclick="location.reload()"><i class="fa fa-refresh"></i> Refresh Page</a></li>
+                    <li><a href="/admin/logout/"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
                     </ul>
             </div>
         </div>
@@ -752,17 +846,16 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Floating Navigation -->
-    {% include 'floating_nav.html' %}
+    <!-- Floating Navigation (Only in report pages) -->
+    {% block floating_nav %}{% endblock %}
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 Toll Transaction Management System. Optimized for Performance.</p>
+            <p>&copy; Chittagong Development Authority</p>
             <small class="text-muted">
-                <i class="fa fa-server"></i> Powered by Django | 
-                <i class="fa fa-database"></i> MSSQL Database | 
-                <i class="fa fa-rocket"></i> Performance Optimized
+                <i class="fa fa-bolt"></i> Powered by SDL Cloud | 
+                <i class="fa fa-rocket"></i> Optimized for Performance
             </small>
         </div>
     </footer>

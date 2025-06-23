@@ -2,6 +2,12 @@
 
 {% block title %}Transaction List - Toll Report System{% endblock %}
 
+{% block menu_toggle %}{% endblock %}
+
+{% block floating_nav %}
+{% include 'floating_nav.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="col-md-5" align="right">
     <a href="{% url 'transactions:transaction_pdf' %}" class="btn btn-danger">Convert into PDF</a>

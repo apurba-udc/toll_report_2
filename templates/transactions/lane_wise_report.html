@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
 {% load image_filters %}
+{% load transactions_extras %}
 
 {% block title %}{{ title }} - Toll Management System{% endblock %}
+
+{% block menu_toggle %}{% endblock %}
+
+{% block floating_nav %}
+{% include 'floating_nav.html' %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -13,271 +20,175 @@
     }
     
     .container {
-        max-width: 1000px;
+        max-width: 1200px;
         margin: 0 auto;
     }
     
-    h1 {
-        color: white;
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 2rem;
+    .report-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
     }
     
     .report-header {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        padding: 15px 20px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
     
-    .report-title {
-        font-size: 1.8rem;
+    .report-header h1 {
+        font-size: 2rem;
         font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 1rem;
+        margin: 0 0 5px 0;
+        color: #3a506b;
+        letter-spacing: 0.5px;
     }
     
-    .report-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
+    .report-header h2 {
+        font-size: 1.4rem;
+        font-weight: 400;
+        margin: 0 0 5px 0;
+        color: #4a6fa5;
     }
     
-    .stat-item {
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-        color: white;
-        padding: 1rem;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+    .report-header h3 {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0 0 10px 0;
+        color: #5a7d9a;
     }
     
-    .stat-value {
-        font-size: 1.3rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 0.3rem;
+    .report-header p {
+        font-size: 0.9rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #495057;
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 6px 15px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
     }
-    
-    .stat-label {
-        font-size: 0.8rem;
-        opacity: 0.9;
+    .report-header .fa-calendar {
+        margin-right: 8px;
+        color: #495057;
     }
     
     .transactions-table {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
+        overflow-x: auto;
     }
     
     .table {
         width: 100%;
         margin: 0;
-        font-size: 0.9rem;
         border-collapse: collapse;
     }
     
     .table thead th {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
+        background-color: #e9ecef;
+        color: #212529;
         border: none;
-        padding: 0.8rem 0.5rem;
-        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.8rem 0.3rem;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
-        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
         text-align: center;
     }
     
     .table tbody td {
-        padding: 0.6rem 0.4rem;
+        padding: 0.5rem 0.3rem;
         vertical-align: middle;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
         text-align: center;
+        font-size: 0.8rem;
+        color: #000;
+        font-weight: 400;
     }
     
     .table tbody tr:hover {
         background: rgba(52, 152, 219, 0.1);
     }
-    
-    .lane-badge {
-        background: #667eea;
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.8rem;
-    }
-    
-    .count-value {
-        background: #ecf0f1;
-        color: #2c3e50;
-        padding: 0.2rem 0.4rem;
-        border-radius: 5px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    
-    .revenue-amount {
-        background: #e8f5e8;
-        color: #27ae60;
-        padding: 0.2rem 0.4rem;
-        border-radius: 5px;
+
+    .total-row {
+        background: #f8f9fa !important;
         font-weight: 700;
-        font-size: 0.9rem;
+    }
+
+    .total-row td {
+        border-top: 2px solid #dee2e6 !important;
+        padding: 0.7rem 0.3rem !important;
+        text-align: center;
+        vertical-align: middle;
     }
     
-    .back-button {
-        background: rgba(255, 255, 255, 0.9);
-        border: 2px solid #3498db;
-        color: #3498db;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .back-button:hover {
-        background: #3498db;
-        color: white;
-        transform: translateY(-2px);
-    }
-    
-    .no-results {
+    .no-data {
         text-align: center;
         padding: 3rem;
         color: #7f8c8d;
-    }
-    
-    .no-results-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-    
-    @media (max-width: 768px) {
-        .table {
-            font-size: 0.7rem;
-        }
-        
-        .table thead th,
-        .table tbody td {
-            padding: 0.4rem 0.2rem;
-        }
-        
-        .report-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .report-header {
-            padding: 1rem;
-        }
-        
-        .report-title {
-            font-size: 1.3rem;
-        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Back Button -->
-    <button class="back-button" onclick="window.location.href='{% url 'transactions:summary_brief' %}'">
-        <i class="fa fa-arrow-left"></i> Back
-    </button>
-
-    <h1>💰 Revenue Summary Report</h1>
-    
-    <!-- Report Header -->
-    <div class="report-header">
-        <h2 class="report-title">
-            <i class="fa fa-money-bill"></i> Revenue Summary Report
-        </h2>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>Shaheed Wasim Akram Expressway</h1>
+            <h2>Patenga Toll Plaza</h2>
+            <h3>{{ title }}</h3>
+            {% if start_date and end_date %}
+                <p>
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                    {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
+                </p>
+            {% endif %}
+        </div>
         
-        <div class="report-stats">
-            <div class="stat-item">
-                <div class="stat-value">{{ laneWise|length|default:0 }}</div>
-                <div class="stat-label">Active Lanes</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">
-                    {% for lane in laneWise %}{{ lane.transaction_count|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+        <div class="transactions-table">
+            {% if lane_summary %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Lane</th>
+                            <th>Cash Traffic</th>
+                            <th>Exempted Traffic</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lane in lane_summary %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><strong>{{ lane.lane_display }}</strong></td>
+                            <td>{{ lane.cash_transactions|default:"0" }}</td>
+                            <td>{{ lane.exempt_transactions|default:"0" }}</td>
+                            <td><strong>৳{{ lane.total_revenue|floatformat:"0"|default:"0" }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td></td>
+                            <td><strong>Grand Total</strong></td>
+                            <td><strong>{{ grand_totals.total_cash|default:"0" }}</strong></td>
+                            <td><strong>{{ grand_totals.total_exempt|default:"0" }}</strong></td>
+                            <td><strong>৳{{ grand_totals.total_revenue|floatformat:"0"|default:"0" }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            {% else %}
+                <div class="no-data">
+                    <h4>No data available for the selected period.</h4>
                 </div>
-                <div class="stat-label">Total Transactions</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">{{ start_date }}</div>
-                <div class="stat-label">Date</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">
-                    ৳{% for lane in laneWise %}{{ lane.total_fare|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
-                </div>
-                <div class="stat-label">Total Revenue</div>
-            </div>
+            {% endif %}
         </div>
     </div>
-
-    <!-- Summary Table -->
-    {% if laneWise %}
-    <div class="transactions-table">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Lane</th>
-                    <th>Transactions</th>
-                    <th>Total Revenue</th>
-                    <th>Average Fare</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for lane in laneWise %}
-                <tr>
-                    <td>
-                        <span class="lane-badge">{{ lane.lane|default:"N/A" }}</span>
-                    </td>
-                    <td>
-                        <span class="count-value">{{ lane.transaction_count|default:0 }}</span>
-                    </td>
-                    <td>
-                        <span class="revenue-amount">৳{{ lane.total_fare|format_currency }}</span>
-                    </td>
-                    <td>
-                        <span class="revenue-amount">
-                            {% if lane.transaction_count and lane.total_fare %}
-                                ৳{% widthratio lane.total_fare lane.transaction_count 1 %}
-                            {% else %}
-                                ৳0.00
-                            {% endif %}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="transactions-table">
-        <div class="no-results">
-            <i class="fa fa-search no-results-icon"></i>
-            <h3>No Revenue Data Found</h3>
-            <p>No transactions found for the selected date range.</p>
-            <small class="text-muted">Try adjusting your date range or check if there were any transactions during this period.</small>
-        </div>
-    </div>
-    {% endif %}
-
 </div>
 {% endblock %} 

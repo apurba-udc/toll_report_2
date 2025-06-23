@@ -8,19 +8,19 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         margin: 0;
-        padding: 20px;
+        padding: 10px;
     }
     
     .container {
-        max-width: 800px;
+        max-width: 700px;
         margin: 0 auto;
     }
     
     h1 {
         color: white;
         text-align: center;
-        margin-bottom: 30px;
-        font-size: 2rem;
+        margin-bottom: 15px;
+        font-size: 1.8rem;
     }
     
     .form-card {
@@ -29,34 +29,34 @@
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
     }
     
     .form-body {
-        padding: 30px;
+        padding: 20px;
     }
     
     .form-section {
         background: rgba(102, 126, 234, 0.05);
         border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
+        padding: 15px;
+        margin-bottom: 15px;
         border: 1px solid rgba(102, 126, 234, 0.1);
     }
     
     .section-title {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 600;
         color: #667eea;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         text-align: center;
     }
     
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 15px;
+        gap: 12px;
+        margin-bottom: 10px;
     }
     
     .form-group {
@@ -66,13 +66,13 @@
     
     .form-label {
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #2c3e50;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
     }
     
     .form-control {
-        padding: 12px;
+        padding: 10px;
         border: 2px solid #e9ecef;
         border-radius: 8px;
         font-size: 0.9rem;
@@ -89,14 +89,14 @@
     
     .submit-section {
         text-align: center;
-        padding-top: 20px;
+        padding-top: 10px;
     }
     
     .submit-btn {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        padding: 15px 30px;
+        padding: 12px 25px;
         border-radius: 25px;
         font-size: 1rem;
         font-weight: 600;
@@ -110,39 +110,43 @@
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
     }
     
-    .info-note {
-        background: rgba(52, 152, 219, 0.1);
-        color: #2980b9;
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 15px;
-        font-size: 0.9rem;
-        text-align: center;
-        border: 1px solid rgba(52, 152, 219, 0.2);
-    }
-    
-    .description-box {
-        background: rgba(46, 204, 113, 0.1);
-        color: #27ae60;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        font-size: 0.9rem;
-        text-align: center;
-        border: 1px solid rgba(46, 204, 113, 0.2);
-    }
-    
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+        
+        .form-body {
+            padding: 15px;
+        }
+        
+        .form-section {
+            padding: 12px;
+        }
+    }
+    
+    @media (max-height: 700px) {
+        body {
+            padding: 5px;
         }
         
         h1 {
             font-size: 1.5rem;
+            margin-bottom: 10px;
         }
         
         .form-body {
-            padding: 20px;
+            padding: 15px;
+        }
+        
+        .form-section {
+            padding: 12px;
+            margin-bottom: 10px;
         }
     }
 </style>
@@ -154,7 +158,7 @@
 
     <div class="form-card">
         <div class="form-body">
-            <form action="{% url 'transactions:summary_lane' %}" target="_blank" method="post">
+            <form action="{% url 'transactions:summary_lane' %}" method="post">
                 {% csrf_token %}
                 
                 <div class="form-section">
@@ -211,18 +215,10 @@
                     </div>
                 </div>
                 
-                <div class="description-box">
-                    ℹ️ This report shows cash-only transactions grouped by lane with detailed revenue breakdown and vehicle counts.
-                </div>
-                
                 <div class="submit-section">
                     <button type="submit" class="submit-btn">
                         📊 Generate Revenue Report
                     </button>
-                    
-                    <div class="info-note">
-                        🔗 The report will open in a new tab with lane-wise transaction counts and revenue totals.
-                    </div>
                 </div>
             </form>
         </div>
@@ -231,14 +227,116 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date as default
+    // Reset button state if user came back from report page
+    resetButtonState();
+    
+    // Set today's date as default in American format
     var today = new Date();
     var todayString = today.toISOString().split('T')[0];
     
+    // Set default values
     document.getElementById('startDate').value = todayString;
     document.getElementById('endDate').value = todayString;
     
+    // Format date inputs to show American format
+    formatDateInputs();
+    
+    // Add form submission handler
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function() {
+        const submitBtn = document.querySelector('.submit-btn');
+        submitBtn.innerHTML = '🔄 Generating Report...';
+        submitBtn.disabled = true;
+    });
+    
     console.log('Revenue summary form loaded successfully');
 });
+
+// Handle browser back button and page reload from cache
+window.addEventListener('pageshow', function(event) {
+    // Reset button state when page is shown (including from cache)
+    resetButtonState();
+});
+
+// Also handle when page becomes visible (tab switching)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        resetButtonState();
+    }
+});
+
+function resetButtonState() {
+    const submitBtn = document.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.innerHTML = '📊 Generate Revenue Report';
+        submitBtn.disabled = false;
+    }
+}
+
+function formatDateInputs() {
+    const today = new Date();
+    const formattedToday = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        // Set placeholder attribute with American format
+        input.setAttribute('placeholder', formattedToday);
+        input.setAttribute('data-placeholder', formattedToday);
+        
+        // Create overlay for custom placeholder
+        const wrapper = input.parentNode;
+        wrapper.style.position = 'relative';
+        
+        let placeholderDiv = wrapper.querySelector('.custom-placeholder');
+        if (!placeholderDiv) {
+            placeholderDiv = document.createElement('div');
+            placeholderDiv.className = 'custom-placeholder';
+            placeholderDiv.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 12px;
+                transform: translateY(-50%);
+                color: #999;
+                font-size: 0.9rem;
+                pointer-events: none;
+                z-index: 1;
+                background: white;
+                padding: 0 2px;
+            `;
+            wrapper.appendChild(placeholderDiv);
+        }
+        
+        // Function to update placeholder visibility
+        function updatePlaceholder() {
+            if (input.value) {
+                placeholderDiv.style.display = 'none';
+            } else {
+                placeholderDiv.textContent = formattedToday;
+                placeholderDiv.style.display = 'block';
+            }
+        }
+        
+        // Set initial state
+        updatePlaceholder();
+        
+        // Event listeners
+        input.addEventListener('input', updatePlaceholder);
+        input.addEventListener('change', updatePlaceholder);
+        input.addEventListener('focus', function() {
+            if (!this.value) {
+                placeholderDiv.style.color = '#ccc';
+            }
+        });
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                placeholderDiv.style.color = '#999';
+            }
+        });
+    });
+}
 </script>
 {% endblock %} 

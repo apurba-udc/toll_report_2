@@ -133,9 +133,13 @@ def daily_report(request):
         # Calculate total revenue for all transactions in the period
         total_revenue = transactions.aggregate(total=Sum('fare'))['total'] or 0
         
+        # Calculate start index for sequential numbering
+        start_index = int((daily_page.number - 1) * paginator.per_page)
+        
         context = {
             'transactions': daily_page,
             'page_obj': daily_page,
+            'start_index': start_index,
             'total_revenue': total_revenue,
             'startDate': start_date,
             'endDate': end_date,
@@ -196,8 +200,8 @@ def lane_shift_report(request):
         
         transactions = transactions.order_by('-capturedate')
         
-        paginator = Paginator(transactions, 10)
-        page = request.GET.get('page')
+        paginator = Paginator(transactions, 30)
+        page = request.POST.get('page') or request.GET.get('page')
         
         try:
             lane_shift_page = paginator.page(page)
@@ -206,16 +210,37 @@ def lane_shift_report(request):
         except EmptyPage:
             lane_shift_page = paginator.page(paginator.num_pages)
         
+        # Calculate start index for sequential numbering (ensuring integer)
+        start_index = int((lane_shift_page.number - 1) * paginator.per_page)
+        
+        # Create dynamic title based on filters
+        title_parts = []
+        selected_vtype_val = request.POST.get('vType', 'All')
+        selected_ptype = request.POST.get('pType', 'All')
+
+        if lane and lane != "All":
+            title_parts.append(f"Lane {lane}")
+        if selected_vtype_val and selected_vtype_val != "All":
+            # Convert vehicle class number to name for the title
+            vtype_name = get_vehicle_class_display(selected_vtype_val)
+            title_parts.append(vtype_name)
+        if selected_ptype and selected_ptype != "All":
+            title_parts.append(selected_ptype)
+
+        if not title_parts:
+            title = 'Unfiltered Transaction Report'
+        else:
+            title = ' | '.join(title_parts) + ' Filtered Report'
+
         context = {
-            'laneShift': lane_shift_page,
-            'start_date': start_date,
-            'end_date': end_date,
-            'start_time': start_time,
-            'end_time': end_time,
-            'selected_lane': lane,
-            'selected_vtype': request.POST.get('vType'),
-            'selected_ptype': request.POST.get('pType'),
-            'title': 'Lane Wise Transaction Details'
+            'transactions': lane_shift_page,
+            'start_index': start_index,
+            'startDate': start_date,
+            'endDate': end_date,
+            'startTime': start_time,
+            'endTime': end_time,
+            'lane': lane,
+            'title': title
         }
         
         return render(request, 'transactions/lane_shift_report.html', context)
@@ -231,31 +256,59 @@ def lane_wise_report(request):
         start_time = request.POST.get('startTime', '00:00:00')
         end_time = request.POST.get('endTime', '23:59:59')
         
-        # Combine date and time
         start_datetime = f"{start_date} {start_time}"
         end_datetime = f"{end_date} {end_time}"
         
-        # Get lane wise summary
-        lane_wise = Transaction.objects.filter(
+        base_query = Transaction.objects.filter(
             capturedate__gte=start_datetime,
-            capturedate__lte=end_datetime,
-            paytype='CSH'
+            capturedate__lte=end_datetime
         ).exclude(
             transtype__in=['LOGIN', 'LOGOUT']
         ).exclude(
-            vehicle_class='0'
-        ).values('lane').annotate(
-            transaction_count=Count('vehicle_class'),
-            total_fare=Sum('fare')
-        ).order_by('lane')
+            vehicle_class__in=['0', '', None]
+        )
+
+        # Get all lanes
+        all_lanes = base_query.values_list('lane', flat=True).distinct().order_by('lane')
         
+        lane_summary = []
+        grand_totals = {
+            'total_cash': 0,
+            'total_exempt': 0,
+            'total_revenue': 0
+        }
+        
+        for lane in all_lanes:
+            lane_transactions = base_query.filter(lane=lane)
+            
+            cash_transactions = lane_transactions.filter(paytype='CSH').count()
+            exempt_transactions = lane_transactions.filter(paytype='VCH').count()
+            total_revenue = lane_transactions.filter(paytype='CSH').aggregate(
+                total=Sum('fare')
+            )['total'] or 0
+            
+            lane_data = {
+                'lane': lane,
+                'lane_display': get_lane_display(lane),
+                'cash_transactions': cash_transactions,
+                'exempt_transactions': exempt_transactions,
+                'total_revenue': total_revenue
+            }
+            
+            lane_summary.append(lane_data)
+            
+            grand_totals['total_cash'] += cash_transactions
+            grand_totals['total_exempt'] += exempt_transactions
+            grand_totals['total_revenue'] += total_revenue
+
         context = {
-            'laneWise': lane_wise,
+            'lane_summary': lane_summary,
+            'grand_totals': grand_totals,
             'start_date': start_date,
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Revenue Summary (Cash Only)'
+            'title': 'Lane Wise Summary'
         }
         
         return render(request, 'transactions/lane_wise_report.html', context)
@@ -266,19 +319,22 @@ def lane_wise_report(request):
 def get_vehicle_class_display(vehicle_class):
     """Get vehicle class display name"""
     vehicle_types = {
-        '1': 'Motorcycle',
-        '2': 'Car/Jeep',
-        '3': 'Small Truck',
-        '4': 'Medium Truck',
-        '5': 'Large Truck',
-        '6': 'Bus',
-        '7': 'Large Bus',
-        '8': 'Trailer',
-        '9': 'Multi-Axle',
-        '10': 'Special Vehicle',
+        '1': 'Motor Bike',
+        '2': 'CNG',
+        '3': 'CAR',
+        '4': 'Jeep',
+        '5': 'Micro Bus',
+        '6': 'Pickup',
+        '7': 'Mini Bus',
+        '8': 'Bus',
+        '9': 'Truck 4W',
+        '10': 'Truck 6W',
+        '11': 'Covered Van',
         '0': 'Violation'
     }
-    return vehicle_types.get(vehicle_class, f"Class {vehicle_class}")
+    # Ensure the key is a stripped string to handle potential whitespace or type issues
+    key = str(vehicle_class).strip()
+    return vehicle_types.get(key, f"Class {key}")
 
 def get_lane_display(lane_code):
     """Get lane display name"""
@@ -311,44 +367,29 @@ def lane_class_wise_report(request):
         start_datetime = f"{start_date} {start_time}"
         end_datetime = f"{end_date} {end_time}"
         
-        # Get all lanes that have cash transactions
-        all_lanes = Transaction.objects.filter(
+        base_transactions = Transaction.objects.filter(
             capturedate__gte=start_datetime,
-            capturedate__lte=end_datetime,
-            paytype='CSH'  # Only cash transactions
+            capturedate__lte=end_datetime
         ).exclude(
             transtype__in=['LOGIN', 'LOGOUT']
         ).exclude(
             vehicle_class__in=['0', '', None]
-        ).values_list('lane', flat=True).distinct().order_by('lane')
+        )
+
+        all_lanes = base_transactions.values_list('lane', flat=True).distinct().order_by('lane')
         
-        # Get all vehicle classes that exist in the data for this period
-        all_vehicle_classes = Transaction.objects.filter(
-            capturedate__gte=start_datetime,
-            capturedate__lte=end_datetime,
-            paytype='CSH'  # Only cash transactions
-        ).exclude(
-            transtype__in=['LOGIN', 'LOGOUT']
-        ).exclude(
-            vehicle_class__in=['0', '', None]
-        ).values_list('vehicle_class', flat=True).distinct().order_by('vehicle_class')
+        all_vehicle_classes = base_transactions.filter(paytype='CSH').values_list('vehicle_class', flat=True).distinct().order_by('vehicle_class')
         
-        # Build cash transaction summary
         traffic_summary = []
         grand_totals = {
             'total_vehicles': 0,
             'total_amount': 0,
-            'classes': {}  # Store class totals in nested dictionary
+            'total_exempt': 0,
+            'classes': {}
         }
         
-        # Initialize grand totals for each class
         for vc in all_vehicle_classes:
-            grand_totals[f'class_{vc}_count'] = 0
-            grand_totals[f'class_{vc}_amount'] = 0
-            grand_totals['classes'][vc] = {
-                'count': 0,
-                'amount': 0
-            }
+            grand_totals['classes'][vc] = { 'count': 0, 'amount': 0 }
         
         for lane in all_lanes:
             lane_data = {
@@ -356,57 +397,38 @@ def lane_class_wise_report(request):
                 'lane_display': get_lane_display(lane),
                 'total_vehicles': 0,
                 'total_amount': 0,
-                'classes': {}  # Store class data in a nested dictionary
+                'exempt_count': 0,
+                'classes': {}
             }
             
-            # Get cash transactions for this lane only
-            lane_transactions = Transaction.objects.filter(
-                capturedate__gte=start_datetime,
-                capturedate__lte=end_datetime,
-                lane=lane,
-                paytype='CSH'  # Only cash transactions
-            ).exclude(
-                transtype__in=['LOGIN', 'LOGOUT']
-            ).exclude(
-                vehicle_class__in=['0', '', None]
-            )
+            lane_transactions_all = base_transactions.filter(lane=lane)
             
-            # Count and sum by each vehicle class
+            exempt_count = lane_transactions_all.filter(paytype='VCH').count()
+            lane_data['exempt_count'] = exempt_count
+            grand_totals['total_exempt'] += exempt_count
+            
+            lane_cash_transactions = lane_transactions_all.filter(paytype='CSH')
+
             for vehicle_class in all_vehicle_classes:
-                class_transactions = lane_transactions.filter(vehicle_class=vehicle_class)
+                class_transactions = lane_cash_transactions.filter(vehicle_class=vehicle_class)
                 class_count = class_transactions.count()
                 class_amount = class_transactions.aggregate(total=Sum('fare'))['total'] or 0
                 
-                # Store in lane data (both ways for template compatibility)
-                lane_data[f'class_{vehicle_class}_count'] = class_count
-                lane_data[f'class_{vehicle_class}_amount'] = class_amount
-                lane_data['classes'][vehicle_class] = {
-                    'count': class_count,
-                    'amount': class_amount
-                }
+                lane_data['classes'][vehicle_class] = { 'count': class_count, 'amount': class_amount }
                 
-                # Add to lane totals
                 lane_data['total_vehicles'] += class_count
                 lane_data['total_amount'] += class_amount
                 
-                # Add to grand totals
-                grand_totals[f'class_{vehicle_class}_count'] += class_count
-                grand_totals[f'class_{vehicle_class}_amount'] += class_amount
                 grand_totals['classes'][vehicle_class]['count'] += class_count
                 grand_totals['classes'][vehicle_class]['amount'] += class_amount
             
-            # Add lane totals to grand totals
             grand_totals['total_vehicles'] += lane_data['total_vehicles']
             grand_totals['total_amount'] += lane_data['total_amount']
             
-            # Only add lanes that have transactions
-            if lane_data['total_vehicles'] > 0:
+            if lane_data['total_vehicles'] > 0 or lane_data['exempt_count'] > 0:
                 traffic_summary.append(lane_data)
         
-        # Create vehicle class display mapping
-        vehicle_class_displays = {}
-        for vc in all_vehicle_classes:
-            vehicle_class_displays[vc] = get_vehicle_class_display(vc)
+        vehicle_class_displays = {vc: get_vehicle_class_display(vc) for vc in all_vehicle_classes}
         
         context = {
             'traffic_summary': traffic_summary,
@@ -417,7 +439,7 @@ def lane_class_wise_report(request):
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Cash Transactions Summary by Lane and Class'
+            'title': 'Lane & Class Wise Summary'
         }
         
         return render(request, 'transactions/lane_class_wise_report.html', context)
@@ -509,21 +531,18 @@ def exempt_report(request):
                 exempt_summary.append(lane_data)
         
         # Create vehicle class display mapping
-        vehicle_class_displays = {}
-        for vc in all_vehicle_classes:
-            vehicle_class_displays[vc] = get_vehicle_class_display(vc)
+        vehicle_class_displays = {vc: get_vehicle_class_display(vc) for vc in all_vehicle_classes}
         
         context = {
-            'exempt_summary': exempt_summary,
+            'traffic_summary': exempt_summary,
             'grand_totals': grand_totals,
             'vehicle_classes': sorted(all_vehicle_classes),
             'vehicle_class_displays': vehicle_class_displays,
-            'total_exempt_vehicles': grand_totals['total_vehicles'],
             'start_date': start_date,
             'end_date': end_date,
             'start_time': start_time,
             'end_time': end_time,
-            'title': 'Traffic Summary (Exempt Only)'
+            'title': 'Exempt Traffic Summary'
         }
         
         return render(request, 'transactions/exempt_report.html', context)

@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
 {% load image_filters %}
+{% load transactions_extras %}
 
 {% block title %}{{ title }} - Toll Management System{% endblock %}
+
+{% block menu_toggle %}{% endblock %}
+
+{% block floating_nav %}
+{% include 'floating_nav.html' %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -13,118 +20,84 @@
     }
     
     .container {
-        max-width: 100%;
+        max-width: 1200px;
         margin: 0 auto;
-        padding: 0 10px;
     }
     
-    h1 {
-        color: white;
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 2rem;
+    .report-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
     }
     
     .report-header {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
+        padding: 15px 20px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
     
-    .report-title {
-        font-size: 1.5rem;
+    .report-header h1 {
+        font-size: 2rem;
         font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 10px;
+        margin: 0 0 5px 0;
+        color: #3a506b;
+        letter-spacing: 0.5px;
     }
     
-    .report-subtitle {
+    .report-header h2 {
+        font-size: 1.4rem;
+        font-weight: 400;
+        margin: 0 0 5px 0;
+        color: #4a6fa5;
+    }
+    
+    .report-header h3 {
         font-size: 1.1rem;
-        color: #34495e;
-        margin-bottom: 10px;
+        font-weight: 500;
+        margin: 0 0 10px 0;
+        color: #5a7d9a;
     }
     
-    .cash-badge {
-        background: #2ecc71;
-        color: white;
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: inline-block;
-        margin-bottom: 10px;
-    }
-    
-    .report-period {
+    .report-header p {
         font-size: 0.9rem;
-        color: #7f8c8d;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #495057;
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 6px 15px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
     }
-    
-    .summary-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .stat-card {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        color: white;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-    }
-    
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 5px;
-    }
-    
-    .stat-label {
-        font-size: 0.8rem;
-        opacity: 0.9;
+    .report-header .fa-calendar {
+        margin-right: 8px;
+        color: #495057;
     }
     
     .transactions-table {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
-    }
-    
-    .table-wrapper {
         overflow-x: auto;
-        overflow-y: visible;
-        max-width: 100%;
-        -webkit-overflow-scrolling: touch;
     }
     
     .table {
         width: 100%;
         margin: 0;
-        font-size: 0.8rem;
         border-collapse: collapse;
-        min-width: 800px; /* Ensure minimum width for all columns */
     }
     
     .table thead th {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
+        background-color: #e9ecef;
+        color: #212529;
         border: none;
-        padding: 0.7rem 0.3rem;
-        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.8rem 0.3rem;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
-        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
         text-align: center;
         white-space: nowrap;
         position: sticky;
@@ -135,81 +108,32 @@
     .table tbody td {
         padding: 0.5rem 0.3rem;
         vertical-align: middle;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
         text-align: center;
         white-space: nowrap;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
+        color: #000;
+        font-weight: 400;
     }
     
     .table tbody tr:hover {
         background: rgba(52, 152, 219, 0.1);
     }
     
-    .lane-cell {
-        background: #667eea;
-        color: white;
-        padding: 0.2rem 0.4rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.7rem;
-        min-width: 80px;
-    }
-    
-    .count-cell {
-        background: #ecf0f1;
-        color: #2c3e50;
-        padding: 0.2rem 0.4rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.7rem;
-        min-width: 50px;
-    }
-    
-    .amount-cell {
-        color: #27ae60;
-        font-weight: 700;
-        font-size: 0.75rem;
-        min-width: 70px;
-    }
-    
-    .total-row {
-        background: rgba(52, 152, 219, 0.1) !important;
-        font-weight: 700;
-    }
-    
-    .total-row td {
-        border-top: 2px solid #3498db !important;
-        padding: 0.7rem 0.3rem !important;
-        font-weight: 700;
-        font-size: 0.8rem;
-    }
-    
     .class-header {
-        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%) !important;
-        color: white !important;
-        font-size: 0.65rem !important;
-        min-width: 120px;
+        /* This class is kept for semantic purposes, but visual styling is handled by the general 'th' rule. */
     }
-    
-    .back-btn {
-        background: rgba(255, 255, 255, 0.9);
-        border: 2px solid #3498db;
-        color: #3498db;
-        padding: 10px 15px;
-        border-radius: 25px;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        margin-bottom: 20px;
-        display: inline-block;
-        text-decoration: none;
+
+    .total-row {
+        background: #f8f9fa !important;
+        font-weight: 700;
     }
-    
-    .back-btn:hover {
-        background: #3498db;
-        color: white;
-        transform: translateY(-2px);
+
+    .total-row td {
+        border-top: 2px solid #dee2e6 !important;
+        padding: 0.7rem 0.3rem !important;
+        text-align: center;
+        vertical-align: middle;
     }
     
     .no-data {
@@ -217,234 +141,73 @@
         padding: 3rem;
         color: #7f8c8d;
     }
-    
-    .no-data-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-    
-    .scroll-hint {
-        text-align: center;
-        padding: 10px;
-        background: rgba(52, 152, 219, 0.1);
-        color: #3498db;
-        font-size: 0.8rem;
-        border-top: 1px solid rgba(52, 152, 219, 0.2);
-    }
-    
-    @media (max-width: 1200px) {
-        .table {
-            font-size: 0.7rem;
-            min-width: 1000px;
-        }
-        
-        .table thead th,
-        .table tbody td {
-            padding: 0.4rem 0.2rem;
-        }
-        
-        .summary-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .container {
-            padding: 0 5px;
-        }
-        
-        .table {
-            font-size: 0.6rem;
-            min-width: 1200px; /* Ensure all columns are visible even on mobile */
-        }
-        
-        .table thead th,
-        .table tbody td {
-            padding: 0.3rem 0.15rem;
-        }
-        
-        .summary-stats {
-            grid-template-columns: 1fr;
-        }
-        
-        .report-header {
-            padding: 15px;
-        }
-        
-        h1 {
-            font-size: 1.5rem;
-        }
-        
-        .lane-cell {
-            min-width: 60px;
-            font-size: 0.6rem;
-        }
-        
-        .count-cell {
-            min-width: 40px;
-            font-size: 0.6rem;
-        }
-        
-        .amount-cell {
-            min-width: 60px;
-            font-size: 0.65rem;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        body {
-            padding: 10px;
-        }
-        
-        .table {
-            font-size: 0.55rem;
-            min-width: 1400px; /* Even wider on small screens to ensure visibility */
-        }
-        
-        .table thead th,
-        .table tbody td {
-            padding: 0.25rem 0.1rem;
-        }
-        
-        h1 {
-            font-size: 1.2rem;
-        }
-        
-        .report-title {
-            font-size: 1.2rem;
-        }
-        
-        .class-header {
-            min-width: 100px;
-            font-size: 0.6rem !important;
-        }
-    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Back Button -->
-    <button class="back-btn" onclick="window.history.back()">
-        <i class="fa fa-arrow-left"></i> Back
-    </button>
-
-    <h1>🚗 Cash Transactions Summary</h1>
-
-    <!-- Report Header -->
-    <div class="report-header">
-        <h2 class="report-title">
-            <i class="fa fa-money-bill"></i>
-            Shaheed Wasim Akram Expressway
-        </h2>
-        <h3 class="report-subtitle">Patenga Toll Plaza</h3>
-        <div class="cash-badge">
-            <i class="fa fa-coins"></i> Cash Transactions Only
+    <div class="report-container">
+        <div class="report-header">
+            <h1>Shaheed Wasim Akram Expressway</h1>
+            <h2>Patenga Toll Plaza</h2>
+            <h3>{{ title }}</h3>
+            {% if start_date and end_date %}
+                <p>
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                    {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
+                </p>
+            {% endif %}
         </div>
-        <div class="report-period">
-            <i class="fa fa-calendar"></i>
-            {{ start_date }} {{ start_time }} to {{ end_date }} {{ end_time }}
+        
+        <div class="transactions-table">
+            {% if traffic_summary %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Lane</th>
+                            {% for vc in vehicle_classes %}
+                                <th class="class-header">{{ vehicle_class_displays|get_item:vc }}</th>
+                            {% endfor %}
+                            <th>Traffic</th>
+                            <th>Exempted</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lane in traffic_summary %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><strong>{{ lane.lane_display }}</strong></td>
+                            {% for vc in vehicle_classes %}
+                                <td>{{ lane.classes|get_item:vc|get_item:'count'|default:"0" }}</td>
+                            {% endfor %}
+                            <td><strong>{{ lane.total_vehicles }}</strong></td>
+                            <td><strong>{{ lane.exempt_count|default:"0" }}</strong></td>
+                            <td><strong>৳{{ lane.total_amount|floatformat:"0" }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td></td>
+                            <td><strong>Grand Total</strong></td>
+                            {% for vc in vehicle_classes %}
+                                <td><strong>{{ grand_totals.classes|get_item:vc|get_item:'count'|default:"0" }}</strong></td>
+                            {% endfor %}
+                            <td><strong>{{ grand_totals.total_vehicles }}</strong></td>
+                            <td><strong>{{ grand_totals.total_exempt|default:"0" }}</strong></td>
+                            <td><strong>৳{{ grand_totals.total_amount|floatformat:"0" }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            {% else %}
+                <div class="no-data">
+                    <h4>No data available for the selected period.</h4>
+                </div>
+            {% endif %}
         </div>
     </div>
-
-    <!-- Summary Statistics -->
-    <div class="summary-stats">
-        <div class="stat-card">
-            <span class="stat-value">{{ grand_totals.total_vehicles }}</span>
-            <div class="stat-label">
-                <i class="fa fa-car"></i> Total Cash Vehicles
-            </div>
-        </div>
-        <div class="stat-card">
-            <span class="stat-value">৳{{ grand_totals.total_amount|floatformat:"0" }}</span>
-            <div class="stat-label">
-                <i class="fa fa-coins"></i> Total Cash Revenue
-            </div>
-        </div>
-        <div class="stat-card">
-            <span class="stat-value">{{ vehicle_classes|length }}</span>
-            <div class="stat-label">
-                <i class="fa fa-list"></i> Vehicle Classes
-            </div>
-        </div>
-        <div class="stat-card">
-            <span class="stat-value">{{ traffic_summary|length }}</span>
-            <div class="stat-label">
-                <i class="fa fa-road"></i> Active Lanes
-            </div>
-        </div>
-    </div>
-
-    <!-- Data Table -->
-    {% if traffic_summary %}
-    <div class="transactions-table">
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th rowspan="2">Lane</th>
-                        {% for vehicle_class in vehicle_classes %}
-                        <th colspan="2" class="class-header">
-                            {{ vehicle_class_displays|lookup:vehicle_class|default:vehicle_class }}
-                            ({{ vehicle_class }})
-                        </th>
-                        {% endfor %}
-                        <th rowspan="2">Total<br>Vehicles</th>
-                        <th rowspan="2">Total<br>Amount<br>(৳)</th>
-                    </tr>
-                    <tr>
-                        {% for vehicle_class in vehicle_classes %}
-                        <th>Count</th>
-                        <th>Amount</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for lane_data in traffic_summary %}
-                    <tr>
-                        <td><span class="lane-cell">{{ lane_data.lane_display }}</span></td>
-                        {% for vehicle_class in vehicle_classes %}
-                        {% with class_data=lane_data.classes|lookup:vehicle_class %}
-                        <td><span class="count-cell">{{ class_data.count|default:0 }}</span></td>
-                        <td class="amount-cell"><strong>৳{{ class_data.amount|floatformat:"0"|default:"0" }}</strong></td>
-                        {% endwith %}
-                        {% endfor %}
-                        <td><span class="lane-cell">{{ lane_data.total_vehicles }}</span></td>
-                        <td class="amount-cell"><strong>৳{{ lane_data.total_amount|floatformat:"0" }}</strong></td>
-                    </tr>
-                    {% endfor %}
-                    
-                    <!-- Grand Total Row -->
-                    <tr class="total-row">
-                        <td><strong>TOTAL</strong></td>
-                        {% for vehicle_class in vehicle_classes %}
-                        {% with class_total=grand_totals.classes|lookup:vehicle_class %}
-                        <td><strong>{{ class_total.count|default:0 }}</strong></td>
-                        <td><strong>৳{{ class_total.amount|floatformat:"0"|default:"0" }}</strong></td>
-                        {% endwith %}
-                        {% endfor %}
-                        <td><strong>{{ grand_totals.total_vehicles }}</strong></td>
-                        <td><strong>৳{{ grand_totals.total_amount|floatformat:"0" }}</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="scroll-hint">
-            <i class="fa fa-arrows-alt-h"></i> Scroll horizontally to view all vehicle classes
-        </div>
-    </div>
-    {% else %}
-    <div class="transactions-table">
-        <div class="no-data">
-            <i class="fa fa-search no-data-icon"></i>
-            <h3>No Cash Transactions Found</h3>
-            <p>No cash transactions found for the selected date range.</p>
-            <small>Try adjusting your date range or check if there were any cash transactions during this period.</small>
-        </div>
-    </div>
-    {% endif %}
-
 </div>
 {% endblock %}
 

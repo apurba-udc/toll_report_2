@@ -28,6 +28,7 @@ DEBUG = True  # Changed to True for development
 
 ALLOWED_HOSTS = [
     'toll.sdlbdcloud.com', 
+    'cda.sdlbdcloud.com',   # Added for nginx config
     'localhost', 
     '127.0.0.1',
     '115.127.158.186',  # আপনার লোকাল IP
@@ -102,19 +103,19 @@ MIGRATION_MODULES = {
     'sessions': None,      # Disable sessions migrations
 }
 
-# Use cache-based sessions instead of database sessions
-# This eliminates the need for django_session table
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
-SESSION_COOKIE_AGE = 3600  # 1 hour
+# Use file-based sessions instead of cache-based for multiple workers
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+SESSION_FILE_PATH = '/tmp/django_sessions'  # Ensure this directory exists
+SESSION_COOKIE_AGE = 7200  # 2 hours (increased from 1 hour)
 SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Changed to False for better UX
+SESSION_COOKIE_NAME = 'toll_sessionid'
 
-# Configure caching for sessions (using local memory cache)
+# Configure caching for other uses (keeping for potential future use)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'toll-reporting-sessions',
+        'LOCATION': 'toll-reporting-cache',
         'OPTIONS': {
             'MAX_ENTRIES': 1000,
             'CULL_FREQUENCY': 3,
@@ -175,6 +176,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'https://toll.sdlbdcloud.com',
+    'http://toll.sdlbdcloud.com',
+    'https://cda.sdlbdcloud.com',
+    'http://cda.sdlbdcloud.com', 
     'http://115.127.158.186',
     'https://115.127.158.186',
     'http://115.127.158.188',
@@ -204,13 +208,13 @@ SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 
-# Make secure cookie settings conditional based on DEBUG mode
-if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-else:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
+# Force secure cookies for HTTPS (even in DEBUG mode for production)
+SESSION_COOKIE_SECURE = True  # Force HTTPS for session cookies
+CSRF_COOKIE_SECURE = True     # Force HTTPS for CSRF cookies  
+SESSION_COOKIE_HTTPONLY = True # Prevent JavaScript access to session cookies
+CSRF_COOKIE_HTTPONLY = True   # Prevent JavaScript access to CSRF cookies
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+CSRF_COOKIE_SAMESITE = 'Lax'     # CSRF protection
 
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'

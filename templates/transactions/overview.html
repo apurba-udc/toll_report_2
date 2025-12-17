@@ -165,6 +165,9 @@
             <a href="{% url 'transactions:summary_detail' %}" class="quick-btn">
                 🚗<br>Traffic Summary
             </a>
+            <a href="{% url 'transactions:exempt_transaction_detail' %}" class="quick-btn">
+                📋<br>Exempt Detail
+            </a>
         </div>
     </div>
 
@@ -232,6 +235,19 @@
             </p>
             <a href="{% url 'transactions:exempt_details' %}" class="feature-btn">
                 View Exempt →
+            </a>
+        </div>
+
+        <!-- Exempt Transaction Detail -->
+        <div class="feature-card">
+            <span class="feature-icon exempt">📋</span>
+            <h4 class="feature-title">Exempt Detail Report</h4>
+            <p class="feature-description">
+                Detailed exempt transaction report with owner information, 
+                exempt type, and reference data from EXEMT_LIST table.
+            </p>
+            <a href="{% url 'transactions:exempt_transaction_detail' %}" class="feature-btn">
+                View Detail Report →
             </a>
         </div>
 

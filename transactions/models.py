@@ -121,6 +121,52 @@ class Transaction(models.Model):
         return "0.00"
 
 
+class ExemptList(models.Model):
+    """
+    Model representing exempt list data
+    This maps to the EXEMT_LIST table in MSSQL
+    IMPORTANT: This table is READ-ONLY - no modifications allowed
+    """
+    
+    # Table structure based on actual database schema
+    id = models.IntegerField(db_column='ID', primary_key=True)
+    reg_number = models.CharField(max_length=30, db_column='REG_NUMBER', blank=True, null=True)
+    owner_name = models.CharField(max_length=30, db_column='OWNER_NAME', blank=True, null=True)
+    owner_group = models.CharField(max_length=30, db_column='OWNER_GROUP', blank=True, null=True)
+    reference = models.CharField(max_length=30, db_column='REFERENCE', blank=True, null=True)
+    contact_number = models.CharField(max_length=30, db_column='CONTACT_NUMBER', blank=True, null=True)
+    approved_by = models.CharField(max_length=30, db_column='APPROVED_BY', blank=True, null=True)
+    comments = models.CharField(max_length=30, db_column='COMMENTS', blank=True, null=True)
+    pic = models.BinaryField(db_column='PIC', blank=True, null=True)
+    suspended = models.BooleanField(db_column='SUSPENDED', blank=True, null=True)
+    date_created = models.DateTimeField(db_column='DATE_CREATED', blank=True, null=True)
+    
+    # Backward compatibility properties
+    @property
+    def registration(self):
+        return self.reg_number
+    
+    @property
+    def owner(self):
+        return self.owner_name
+    
+    objects = ReadOnlyManager()  # Custom manager to prevent modifications
+    
+    class Meta:
+        db_table = 'EXEMT_LIST'  # Direct table name for MSSQL (note: EXEMT not EXEMPT)
+        managed = False  # This table exists in ZAKTOLL database, Django doesn't manage it
+        default_permissions = ()  # No default permissions for this model
+    
+    def save(self, *args, **kwargs):
+        raise PermissionDenied("EXEMPT_LIST টেবিলে কোনো পরিবর্তন অনুমতিত নয়। এটি read-only টেবিল।")
+    
+    def delete(self, *args, **kwargs):
+        raise PermissionDenied("EXEMPT_LIST টেবিল থেকে কোনো ডেটা ডিলিট করা নিষিদ্ধ।")
+    
+    def __str__(self):
+        return f"Exempt {self.reg_number} - {self.owner_name}"
+
+
 class CustomUserManager(BaseUserManager):
     def get_by_natural_key(self, username):
         return self.get(username=username)

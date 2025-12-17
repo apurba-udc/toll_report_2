@@ -1,0 +1,27 @@
+[Unit]
+Description=Toll Management System SSL Server (Debug Mode)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/home/atonu/toll_report
+Environment=DJANGO_SETTINGS_MODULE=toll_system.settings
+Environment=PYTHONUNBUFFERED=1
+Environment=DJANGO_DEBUG=1
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/bin/bash -x /home/atonu/toll_report/start_toll_server.sh start
+ExecStop=/bin/bash /home/atonu/toll_report/start_toll_server.sh stop
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=toll-ssl
+
+# Ensure we can write to our directories
+ReadWritePaths=/home/atonu/toll_report
+
+[Install]
+WantedBy=multi-user.target

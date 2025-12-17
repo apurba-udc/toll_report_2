@@ -1,0 +1,470 @@
+{% extends 'base.html' %}
+{% load image_filters %}
+
+{% block title %}Exempt Transaction Detail Report - Toll Report System{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        margin: 0;
+        padding: 10px;
+    }
+    
+    .container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        color: white;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 1.8rem;
+    }
+    
+    .form-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+    
+    .form-body {
+        padding: 20px;
+    }
+    
+    .form-section {
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .form-row-three {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    
+    .form-control {
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .submit-section {
+        text-align: center;
+        padding-top: 10px;
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .quick-dates {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        justify-content: center;
+    }
+
+    .quick-date-btn {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .quick-date-btn:hover {
+        background: rgba(102, 126, 234, 0.2);
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .form-row, .form-row-three {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+        
+        .form-body {
+            padding: 15px;
+        }
+        
+        .form-section {
+            padding: 12px;
+        }
+        
+        .quick-dates {
+            gap: 6px;
+        }
+        
+        .quick-date-btn {
+            padding: 3px 6px;
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-height: 700px) {
+        body {
+            padding: 5px;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .form-body {
+            padding: 15px;
+        }
+        
+        .form-section {
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .quick-dates {
+            margin-top: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>🚫 Exempt Transaction Detail Report</h1>
+
+    <div class="form-card">
+        <div class="form-body">
+            <form method="post" action="{% url 'transactions:exempt_transaction_detail' %}">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <div class="section-title">
+                        📅 Date & Time Selection
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="startDate">
+                                📅 From Date
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="startDate" 
+                                   name="startDate" 
+                                   value="{{ default_start_date|default:'' }}"
+                                   required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="endDate">
+                                📅 To Date
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="endDate" 
+                                   name="endDate" 
+                                   value="{{ default_end_date|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-dates">
+                        <span class="quick-date-btn" onclick="setToday('startDate')">
+                            📅 Today
+                        </span>
+                        <span class="quick-date-btn" onclick="setYesterday('startDate')">
+                            📅 Yesterday
+                        </span>
+                        <span class="quick-date-btn" onclick="setWeekAgo('startDate')">
+                            📅 Week Ago
+                        </span>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="startTime">
+                                🕐 From Time
+                            </label>
+                            <input type="time" 
+                                   class="form-control" 
+                                   id="startTime" 
+                                   name="startTime" 
+                                   value="00:00:00"
+                                   step="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="endTime">
+                                🕐 To Time
+                            </label>
+                            <input type="time" 
+                                   class="form-control" 
+                                   id="endTime" 
+                                   name="endTime" 
+                                   value="23:59:59"
+                                   step="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-title">
+                        🔧 Advanced Filters
+                    </div>
+                    
+                    <div class="form-row-three">
+                        <div class="form-group">
+                            <label class="form-label" for="lane">
+                                🛣️ Lane
+                            </label>
+                            <select name="lane" id="lane" class="form-control">
+                                <option value="All">All Lanes</option>
+                                <option value="E101">ECR 1 (E101)</option>
+                                <option value="L101">Lane 101</option>
+                                <option value="L102">Lane 102</option>
+                                <option value="L103">Lane 103</option>
+                                <option value="L104">Lane 104</option>
+                                <option value="L105">Lane 105</option>
+                                <option value="L106">Lane 106</option>
+                                <option value="L107">Lane 107</option>
+                                <option value="L108">Lane 108</option>
+                                <option value="L109">Lane 109</option>
+                                <option value="L110">Lane 110</option>
+                                <option value="L112">Lane 112</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="vType">
+                                🚗 Vehicle Type
+                            </label>
+                            <select name="vType" id="vType" class="form-control">
+                                <option value="All">All Types</option>
+                                <option value="1">Class 1 (Motorcycle)</option>
+                                <option value="2">Class 2 (Car/Jeep)</option>
+                                <option value="3">Class 3 (Small Truck)</option>
+                                <option value="4">Class 4 (Medium Truck)</option>
+                                <option value="5">Class 5 (Large Truck)</option>
+                                <option value="6">Class 6 (Bus)</option>
+                                <option value="7">Class 7 (Large Bus)</option>
+                                <option value="8">Class 8 (Trailer)</option>
+                                <option value="9">Class 9 (Multi-Axle)</option>
+                                <option value="10">Class 10 (Special)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="submit-section">
+                    <button type="submit" class="submit-btn">
+                        🚫 Generate Exempt Detail Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Quick date selection functions
+function setToday(fieldId) {
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    document.getElementById(fieldId).value = dateStr;
+}
+
+function setYesterday(fieldId) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = yesterday.toISOString().split('T')[0];
+    document.getElementById(fieldId).value = dateStr;
+}
+
+function setWeekAgo(fieldId) {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const dateStr = weekAgo.toISOString().split('T')[0];
+    document.getElementById(fieldId).value = dateStr;
+}
+
+// Set default dates on page load
+document.addEventListener('DOMContentLoaded', function() {
+    resetButtonState();
+    
+    var serverDate = '{{ current_date|default:"" }}';
+    var today = serverDate || new Date().toISOString().split('T')[0];
+    
+    var startDateInput = document.getElementById('startDate');
+    var endDateInput = document.getElementById('endDate');
+    
+    if (!startDateInput.value) {
+        startDateInput.value = today;
+    }
+    if (!endDateInput.value) {
+        endDateInput.value = today;
+    }
+    
+    formatDateInputs();
+    
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function() {
+        const submitBtn = document.querySelector('.submit-btn');
+        submitBtn.innerHTML = '🔄 Generating Report...';
+        submitBtn.disabled = true;
+    });
+    
+    console.log('Exempt transaction detail report form loaded with server date:', serverDate || 'fallback to client date');
+});
+
+window.addEventListener('pageshow', function(event) {
+    resetButtonState();
+});
+
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        resetButtonState();
+    }
+});
+
+function resetButtonState() {
+    const submitBtn = document.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.innerHTML = '🚫 Generate Exempt Detail Report';
+        submitBtn.disabled = false;
+    }
+}
+
+function formatDateInputs() {
+    var serverDate = '{{ current_date|default:"" }}';
+    var referenceDate = serverDate ? new Date(serverDate) : new Date();
+    
+    const formattedDate = referenceDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.setAttribute('placeholder', formattedDate);
+        input.setAttribute('data-placeholder', formattedDate);
+        
+        const wrapper = input.parentNode;
+        wrapper.style.position = 'relative';
+        
+        let placeholderDiv = wrapper.querySelector('.custom-placeholder');
+        if (!placeholderDiv) {
+            placeholderDiv = document.createElement('div');
+            placeholderDiv.className = 'custom-placeholder';
+            placeholderDiv.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 12px;
+                transform: translateY(-50%);
+                color: #999;
+                font-size: 0.9rem;
+                pointer-events: none;
+                z-index: 1;
+                background: white;
+                padding: 0 2px;
+            `;
+            wrapper.appendChild(placeholderDiv);
+        }
+        
+        function updatePlaceholder() {
+            if (input.value) {
+                placeholderDiv.style.display = 'none';
+            } else {
+                placeholderDiv.textContent = formattedDate;
+                placeholderDiv.style.display = 'block';
+            }
+        }
+        
+        updatePlaceholder();
+        
+        input.addEventListener('input', updatePlaceholder);
+        input.addEventListener('change', updatePlaceholder);
+        input.addEventListener('focus', function() {
+            if (!this.value) {
+                placeholderDiv.style.color = '#ccc';
+            }
+        });
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                placeholderDiv.style.color = '#999';
+            }
+        });
+    });
+}
+</script>
+{% endblock %}
+

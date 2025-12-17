@@ -16,7 +16,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-from .models import Transaction, TollUser
+from .models import Transaction, TollUser, ExemptList
 from django.urls import reverse
 from django.utils import timezone
 import pytz
@@ -1333,6 +1333,164 @@ def logout_view(request):
     """Logout view"""
     logout(request)
     return redirect('transactions:login')
+
+@login_required
+def exempt_transaction_detail_report(request):
+    """Exempt transaction detail report - combines Transaction and EXEMT_LIST tables"""
+    # Get current date for default values
+    current_date = date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
+    
+    if request.method == 'POST':
+        start_date = request.POST.get('startDate')
+        end_date = request.POST.get('endDate')
+        start_time = request.POST.get('startTime', '00:00:00')
+        end_time = request.POST.get('endTime', '23:59:59')
+        lane = request.POST.get('lane', 'All')
+        v_type = request.POST.get('vType', 'All')
+        
+        # Convert vehicle type
+        if v_type == 'Violation':
+            v_type = '0'
+        
+        # Parse dates and times as UTC
+        try:
+            start_datetime_str = f"{start_date} {start_time}"
+            end_datetime_str = f"{end_date} {end_time}"
+            
+            start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
+            end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
+                
+        except ValueError as e:
+            start_datetime = f"{start_date} {start_time}"
+            end_datetime = f"{end_date} {end_time}"
+        
+        # Filter exempt transactions only (paytype='VCH')
+        transactions = Transaction.objects.filter(
+            capturedate__gte=start_datetime,
+            capturedate__lte=end_datetime,
+            paytype='VCH'  # Only exempt transactions
+        ).exclude(
+            transtype__in=['LOGIN', 'LOGOUT']
+        ).exclude(
+            vehicle_class__in=['0', '', None]
+        )
+        
+        # Apply filters
+        if lane != "All":
+            transactions = transactions.filter(lane=lane)
+        if v_type != "All":
+            transactions = transactions.filter(vehicle_class=v_type)
+        
+        transactions = transactions.order_by('-capturedate')
+        
+        # Build report data with EXEMT_LIST join
+        report_data = []
+        
+        # Get all exempt list entries for efficient lookup
+        # Only exact match: REG_NUMBER in EXEMT_LIST must equal regnumber in Transaction
+        exempt_list_dict = {}
+        try:
+            exempt_list_entries = ExemptList.objects.all()
+            for exempt_entry in exempt_list_entries:
+                if exempt_entry.reg_number:
+                    # Store with normalized key (uppercase, stripped) for exact matching
+                    reg_key = exempt_entry.reg_number.upper().strip()
+                    exempt_list_dict[reg_key] = exempt_entry
+        except Exception as e:
+            print(f"Error loading exempt list: {str(e)}")
+        
+        # Process each transaction
+        for trans in transactions:
+            reg_number = (trans.regnumber or '').strip().upper()
+            
+            # First try exact match: REG_NUMBER in EXEMT_LIST exactly equals regnumber in Transaction
+            exempt_entry = None
+            if reg_number:
+                # Exact match only
+                exempt_entry = exempt_list_dict.get(reg_number)
+            
+            # Prepare exempt data
+            if exempt_entry:
+                # Found exact match - use data from EXEMT_LIST
+                owner = exempt_entry.owner_name or 'N/A'
+                owner_group = exempt_entry.owner_group or 'N/A'
+                reference = exempt_entry.reference or 'N/A'
+            elif reg_number:
+                # No exact match found - use first string before '-' from regnumber
+                if '-' in reg_number:
+                    fallback_value = reg_number.split('-')[0].strip()
+                else:
+                    # If no '-' found, use the whole regnumber
+                    fallback_value = reg_number
+                owner = fallback_value
+                owner_group = fallback_value
+                reference = fallback_value
+            else:
+                # No registration number at all - use N/A
+                owner = 'N/A'
+                owner_group = 'N/A'
+                reference = 'N/A'
+            
+            report_data.append({
+                'sequence': trans.sequence,
+                'date_time': trans.capturedate,
+                'lane': trans.lane,
+                'vehicle_type': trans.vehicle_class,
+                'vehicle_type_display': get_vehicle_class_display(trans.vehicle_class),
+                'registration': trans.regnumber or 'N/A',
+                'collector': trans.collectorid or 'N/A',
+                'owner': owner,
+                'owner_group': owner_group,
+                'reference': reference,
+                'fare': float(trans.fare or 0),
+            })
+        
+        # Pagination
+        paginator = Paginator(report_data, 30)
+        page = request.POST.get('page') or request.GET.get('page')
+        
+        try:
+            report_page = paginator.page(page)
+        except PageNotAnInteger:
+            report_page = paginator.page(1)
+        except EmptyPage:
+            report_page = paginator.page(paginator.num_pages)
+        
+        # Calculate summary statistics
+        total_transactions = len(report_data)
+        
+        # Calculate start index for sequential numbering
+        start_index = int((report_page.number - 1) * paginator.per_page)
+        
+        context = {
+            'report_data': report_page,
+            'page_obj': report_page,
+            'start_index': start_index,
+            'total_transactions': total_transactions,
+            'startDate': start_date,
+            'endDate': end_date,
+            'startTime': start_time,
+            'endTime': end_time,
+            'lane': lane,
+            'vType': request.POST.get('vType', 'All'),
+            'title': 'Exempt Transaction Detail Report',
+            'current_date': current_date_str,
+        }
+        
+        return render(request, 'transactions/exempt_transaction_detail_report.html', context)
+    
+    # For GET requests, provide current date as defaults
+    context = {
+        'current_date': current_date_str,
+        'default_start_date': current_date_str,
+        'default_end_date': current_date_str,
+    }
+    return render(request, 'transactions/exempt_transaction_detail_form.html', context)
+
 
 @login_required
 def system_date_check(request):

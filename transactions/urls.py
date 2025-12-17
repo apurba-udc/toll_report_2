@@ -35,6 +35,9 @@ urlpatterns = [
     path('exempt_detail/', views.exempt_report, name='exempt_detail'),  # Alternative URL
     path('exempt/pdf/', views.exempt_report_pdf, name='exempt_pdf'),
     
+    # Exempt transaction detail report (new)
+    path('exempt_transaction_detail/', views.exempt_transaction_detail_report, name='exempt_transaction_detail'),
+    
     # API endpoints
     path('api/image/<str:transaction_id>/', views.get_image_view, name='get_image'),
     

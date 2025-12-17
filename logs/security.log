@@ -7,3 +7,72 @@ WARNING 2025-06-24 02:17:17,898 middleware Potentially unsafe POST request to /d
 WARNING 2025-06-23 20:49:12,566 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
 WARNING 2025-06-24 02:57:47,246 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
 WARNING 2025-06-24 02:59:34,250 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 09:55:20,676 middleware Potentially unsafe POST request to /cgi-bin/../../../../../../../../../../bin/sh by user 
+WARNING 2025-06-24 09:55:21,020 middleware Potentially unsafe POST request to /cgi-bin/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh by user 
+WARNING 2025-06-24 09:55:21,405 middleware Potentially unsafe POST request to /hello.world by user 
+WARNING 2025-06-24 10:53:00,175 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-06-24 10:56:49,694 middleware Potentially unsafe POST request to /summary_detail/ by user 
+WARNING 2025-08-31 22:07:49,752 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-08-31 22:50:30,925 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-08-31 23:00:12,349 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-08-31 23:14:22,137 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-09-01 12:10:57,862 middleware Potentially unsafe POST request to /daily_shift_report/ by user admin
+WARNING 2025-09-03 07:20:18,549 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-03 09:33:29,455 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-03 09:33:29,859 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-03 09:33:30,255 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-03 09:33:31,197 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-03 09:33:32,147 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-03 09:33:32,543 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-03 09:33:33,550 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-03 09:33:33,939 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-03 12:24:06,635 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-03 15:10:33,422 middleware Potentially unsafe POST request to /wp-json/sure-triggers/v1/automation/action by user 
+WARNING 2025-09-04 23:46:41,959 middleware Potentially unsafe POST request to /sdk by user 
+WARNING 2025-09-04 23:46:45,179 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-06 23:42:52,365 middleware Potentially unsafe POST request to /hello.world by user 
+WARNING 2025-09-09 17:10:40,233 middleware Potentially unsafe POST request to /sdk by user 
+WARNING 2025-09-09 17:10:42,761 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-10 00:29:53,388 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-10 00:29:53,648 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-10 00:29:53,912 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-10 00:29:54,095 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-10 00:29:54,524 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-10 00:29:54,755 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-10 00:29:54,931 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-10 00:29:55,099 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-10 01:03:36,736 middleware Potentially unsafe POST request to /hello.world by user 
+WARNING 2025-09-10 04:00:36,279 middleware Potentially unsafe POST request to /remote/logincheck by user 
+WARNING 2025-09-10 12:42:11,358 middleware Potentially unsafe POST request to /hello.world by user 
+WARNING 2025-09-10 13:10:28,416 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-10 13:10:30,995 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-10 13:10:32,364 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-10 13:10:33,338 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-10 13:10:35,169 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-10 13:10:36,785 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-10 13:10:38,472 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-10 13:10:39,966 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-11 18:02:48,266 middleware Potentially unsafe POST request to /hello.world by user 
+WARNING 2025-09-13 17:58:53,510 middleware Potentially unsafe POST request to /sdk by user 
+WARNING 2025-09-13 17:58:56,086 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-15 19:37:27,700 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-15 19:37:33,166 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-17 09:43:30,865 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-17 09:43:31,885 middleware Potentially unsafe POST request to /dns-query by user 
+WARNING 2025-09-17 09:43:32,535 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-17 09:43:32,846 middleware Potentially unsafe POST request to /query by user 
+WARNING 2025-09-17 09:43:33,012 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-17 09:43:33,190 middleware Potentially unsafe POST request to /resolve by user 
+WARNING 2025-09-17 09:43:33,355 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-17 09:43:33,800 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-09-17 22:22:41,971 middleware Potentially unsafe POST request to /onvif/device_service by user 
+WARNING 2025-09-18 18:27:16,225 middleware Potentially unsafe POST request to /wp-content/plugins/backup-backup/includes/backup-heart.php by user 
+WARNING 2025-12-17 15:49:52,516 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 15:50:41,890 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 15:58:33,292 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 15:58:45,309 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 15:58:59,978 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 16:09:56,892 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 16:11:14,781 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 16:13:55,893 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin
+WARNING 2025-12-17 16:14:25,474 middleware Potentially unsafe POST request to /exempt_transaction_detail/ by user admin

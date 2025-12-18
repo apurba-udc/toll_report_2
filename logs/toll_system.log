@@ -719,3 +719,15 @@ WARNING 2025-12-17 16:14:25,474 middleware Potentially unsafe POST request to /e
 INFO 2025-12-17 16:18:06,559 middleware User 'admin' (ADMIN) accessed GET /summary_brief/ from 127.0.0.1
 INFO 2025-12-17 16:18:11,326 middleware User 'admin' (ADMIN) accessed GET /report_date/ from 127.0.0.1
 INFO 2025-12-17 16:18:13,333 middleware User 'admin' (ADMIN) accessed POST /daily_report/ from 127.0.0.1
+WARNING 2025-12-17 16:58:32,628 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-17 18:43:35,148 middleware Potentially unsafe POST request to /vpnsvc/connect.cgi by user 
+WARNING 2025-12-17 19:22:49,001 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-17 23:39:18,787 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-17 23:44:48,574 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 03:02:13,597 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 06:02:15,056 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 09:15:51,597 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 15:41:33,279 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 17:34:43,905 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 18:56:12,232 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-18 21:53:13,978 middleware Potentially unsafe POST request to / by user 

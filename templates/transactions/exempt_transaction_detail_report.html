@@ -344,7 +344,7 @@
                     <tbody>
                         {% for item in report_data %}
                         <tr>
-                            <td>{{ start_index|add:forloop.counter }}</td>
+                            <td>{{ page_obj|sequential_number:forloop.counter }}</td>
                             <td class="sequence-number">{{ item.sequence }}</td>
                             <td>{{ item.date_time|date:"Y-m-d H:i:s" }}</td>
                             <td class="lane-text">{{ item.lane|default:"N/A" }}</td>

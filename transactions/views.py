@@ -1349,22 +1349,31 @@ def exempt_transaction_detail_report(request):
         lane = request.POST.get('lane', 'All')
         v_type = request.POST.get('vType', 'All')
         
+        # Normalize time format - ensure seconds are present (HH:MM -> HH:MM:00)
+        if start_time and len(start_time.split(':')) == 2:
+            start_time = start_time + ':00'
+        if end_time and len(end_time.split(':')) == 2:
+            end_time = end_time + ':00'
+        
         # Convert vehicle type
         if v_type == 'Violation':
             v_type = '0'
         
-        # Parse dates and times as UTC
+        # Parse dates and times as UTC (user input is treated as UTC)
         try:
             start_datetime_str = f"{start_date} {start_time}"
             end_datetime_str = f"{end_date} {end_time}"
             
+            # Parse directly as naive datetime, then make timezone-aware as UTC
             start_datetime_naive = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')
             end_datetime_naive = datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
             
+            # Make timezone-aware as UTC (no conversion needed since input is UTC)
             start_datetime = timezone.make_aware(start_datetime_naive, timezone.utc)
             end_datetime = timezone.make_aware(end_datetime_naive, timezone.utc)
                 
         except ValueError as e:
+            # Fallback to string format if parsing fails
             start_datetime = f"{start_date} {start_time}"
             end_datetime = f"{end_date} {end_time}"
         

@@ -731,3 +731,8 @@ WARNING 2025-12-18 15:41:33,279 middleware Potentially unsafe POST request to / 
 WARNING 2025-12-18 17:34:43,905 middleware Potentially unsafe POST request to / by user 
 WARNING 2025-12-18 18:56:12,232 middleware Potentially unsafe POST request to / by user 
 WARNING 2025-12-18 21:53:13,978 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-19 00:46:53,887 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-19 01:12:22,973 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-19 04:14:50,814 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-19 07:37:20,767 middleware Potentially unsafe POST request to / by user 
+WARNING 2025-12-19 10:20:04,119 middleware Potentially unsafe POST request to / by user 

@@ -321,6 +321,18 @@
                                 <option value="10">Class 10 (Special)</option>
                             </select>
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="exemptType">
+                                🏷️ Exempt Type
+                            </label>
+                            <select name="exemptType" id="exemptType" class="form-control">
+                                <option value="All">All Exempt Types</option>
+                                {% for exempt_type in exempt_types %}
+                                    <option value="{{ exempt_type }}" {% if exemptType == exempt_type %}selected{% endif %}>{{ exempt_type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
                 
@@ -467,5 +479,7 @@ function formatDateInputs() {
 }
 </script>
 {% endblock %}
+
+
 
 

@@ -1348,6 +1348,7 @@ def exempt_transaction_detail_report(request):
         end_time = request.POST.get('endTime', '23:59:59')
         lane = request.POST.get('lane', 'All')
         v_type = request.POST.get('vType', 'All')
+        exempt_type = request.POST.get('exemptType', 'All')
         
         # Normalize time format - ensure seconds are present (HH:MM -> HH:MM:00)
         if start_time and len(start_time.split(':')) == 2:
@@ -1458,6 +1459,10 @@ def exempt_transaction_detail_report(request):
                 'fare': float(trans.fare or 0),
             })
         
+        # Apply exempt type filter (after join with EXEMT_LIST)
+        if exempt_type != "All":
+            report_data = [item for item in report_data if item['owner_group'] == exempt_type]
+        
         # Pagination
         paginator = Paginator(report_data, 30)
         page = request.POST.get('page') or request.GET.get('page')
@@ -1475,6 +1480,17 @@ def exempt_transaction_detail_report(request):
         # Calculate start index for sequential numbering
         start_index = int((report_page.number - 1) * paginator.per_page)
         
+        # Get distinct exempt types for form (in case user wants to change filter)
+        exempt_types = []
+        try:
+            exempt_types = ExemptList.objects.exclude(
+                owner_group__isnull=True
+            ).exclude(
+                owner_group=''
+            ).values_list('owner_group', flat=True).distinct().order_by('owner_group')
+        except Exception as e:
+            print(f"Error loading exempt types: {str(e)}")
+        
         context = {
             'report_data': report_page,
             'page_obj': report_page,
@@ -1486,6 +1502,8 @@ def exempt_transaction_detail_report(request):
             'endTime': end_time,
             'lane': lane,
             'vType': request.POST.get('vType', 'All'),
+            'exemptType': exempt_type,
+            'exempt_types': exempt_types,
             'title': 'Exempt Transaction Detail Report',
             'current_date': current_date_str,
         }
@@ -1493,10 +1511,22 @@ def exempt_transaction_detail_report(request):
         return render(request, 'transactions/exempt_transaction_detail_report.html', context)
     
     # For GET requests, provide current date as defaults
+    # Get distinct exempt types from EXEMT_LIST for filter dropdown
+    exempt_types = []
+    try:
+        exempt_types = ExemptList.objects.exclude(
+            owner_group__isnull=True
+        ).exclude(
+            owner_group=''
+        ).values_list('owner_group', flat=True).distinct().order_by('owner_group')
+    except Exception as e:
+        print(f"Error loading exempt types: {str(e)}")
+    
     context = {
         'current_date': current_date_str,
         'default_start_date': current_date_str,
         'default_end_date': current_date_str,
+        'exempt_types': exempt_types,
     }
     return render(request, 'transactions/exempt_transaction_detail_form.html', context)
 

@@ -1429,21 +1429,18 @@ def exempt_transaction_detail_report(request):
                 owner = exempt_entry.owner_name or 'N/A'
                 owner_group = exempt_entry.owner_group or 'N/A'
                 reference = exempt_entry.reference or 'N/A'
-            elif reg_number:
-                # No exact match found - use first string before '-' from regnumber
-                if '-' in reg_number:
-                    fallback_value = reg_number.split('-')[0].strip()
-                else:
-                    # If no '-' found, use the whole regnumber
-                    fallback_value = reg_number
-                owner = fallback_value
-                owner_group = fallback_value
-                reference = fallback_value
             else:
-                # No registration number at all - use N/A
-                owner = 'N/A'
-                owner_group = 'N/A'
-                reference = 'N/A'
+                # No exact match found in EXEMT_LIST - use EXEMPTTYPE from Transaction table
+                fallback_value = (trans.exempttype or '').strip()
+                if fallback_value:
+                    owner = fallback_value
+                    owner_group = fallback_value
+                    reference = fallback_value
+                else:
+                    # No EXEMPTTYPE value either - use N/A
+                    owner = 'N/A'
+                    owner_group = 'N/A'
+                    reference = 'N/A'
             
             report_data.append({
                 'sequence': trans.sequence,

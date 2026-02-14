@@ -46,6 +46,7 @@ class Transaction(models.Model):
     paytype = models.CharField(max_length=10, db_column='PAYTYPE', blank=True, null=True)
     pic = models.BinaryField(db_column='PIC', blank=True, null=True)  # Binary image data
     shift = models.CharField(max_length=10, db_column='SHIFT', blank=True, null=True)
+    exempttype = models.CharField(max_length=50, db_column='EXEMPTTYPE', blank=True, null=True)
     
     objects = ReadOnlyManager()  # Custom manager to prevent modifications
     

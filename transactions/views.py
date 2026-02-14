@@ -1442,9 +1442,19 @@ def exempt_transaction_detail_report(request):
                     owner_group = 'N/A'
                     reference = 'N/A'
             
+            # Format date_time the same way as daily report (utc_date "M d, Y" + utc_time "g:i A")
+            from django.template.defaultfilters import date as date_filter, time as time_filter
+            capture_dt = trans.capturedate
+            if capture_dt:
+                if timezone.is_aware(capture_dt):
+                    capture_dt = capture_dt.astimezone(pytz.UTC)
+                formatted_date_time = f"{date_filter(capture_dt, 'M d, Y')} {time_filter(capture_dt, 'g:i A')}"
+            else:
+                formatted_date_time = 'N/A'
+            
             report_data.append({
                 'sequence': trans.sequence,
-                'date_time': trans.capturedate,
+                'date_time': formatted_date_time,
                 'lane': trans.lane,
                 'vehicle_type': trans.vehicle_class,
                 'vehicle_type_display': get_vehicle_class_display(trans.vehicle_class),

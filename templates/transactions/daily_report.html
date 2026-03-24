@@ -430,7 +430,7 @@
                             <td>
                                 <div class="image-container">
                                     <div class="loading-spinner" id="loading-{{ tran.sequence }}" style="display: none;"></div>
-                                    <div class="image-placeholder" id="placeholder-{{ tran.sequence }}" onclick="loadVehicleImage('{{ tran.sequence }}')">
+                                    <div class="image-placeholder" id="placeholder-{{ tran.sequence }}" onclick="loadVehicleImage('{{ tran.sequence }}', '{{ tran.lane }}')">
                                         📷
                             </div>
                                 </div>
@@ -506,7 +506,7 @@ function goToPage(pageNumber) {
     document.getElementById('paginationForm').submit();
 }
 
-function loadVehicleImage(sequenceId) {
+function loadVehicleImage(sequenceId, lane) {
     console.log('Loading image for sequence:', sequenceId);
     
     var placeholder = document.getElementById('placeholder-' + sequenceId);
@@ -521,7 +521,7 @@ function loadVehicleImage(sequenceId) {
     spinner.style.display = 'block';
     
     var timestamp = new Date().getTime();
-    var apiUrl = '/api/image/' + sequenceId + '/?t=' + timestamp;
+    var apiUrl = '/api/image/' + sequenceId + '/?t=' + timestamp + (lane ? '&lane=' + encodeURIComponent(lane) : '');
     
     fetch(apiUrl, {
         method: 'GET',

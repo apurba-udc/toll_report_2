@@ -67,8 +67,6 @@ def daily_report(request):
             capturedate__lte=end_datetime
         ).exclude(
             transtype__in=['LOGIN', 'LOGOUT']
-        ).exclude(
-            vehicle_class='0'
         ).order_by('-capturedate')
         
         paginator = Paginator(transactions, 30)
@@ -1200,38 +1198,40 @@ def exempt_report_pdf(request):
 def get_image_view(request, transaction_id):
     """Get transaction image - serves binary image data directly for AJAX requests"""
     try:
-        print(f"Image request for transaction: {transaction_id}")
-        
-        # Handle duplicate sequences by getting the first one with image
-        transaction = Transaction.objects.filter(
-            sequence=transaction_id,
-            pic__isnull=False
-        ).first()
-        
-        print(f"Found transaction: {transaction is not None}")
-        
+        lane = request.GET.get('lane', '')
+
+        # Only L1xx lanes (L101-L112) have physical cameras; other lanes
+        # (E101, ECR2-4, L03x, L04x) store leaked/invalid PIC data.
+        if lane and not lane.startswith('L1'):
+            response = HttpResponse('No camera on this lane', status=404)
+            response['Access-Control-Allow-Origin'] = '*'
+            return response
+
+        query = Transaction.objects.filter(sequence=transaction_id)
+        if lane:
+            query = query.filter(lane=lane)
+
+        transaction = query.filter(pic__isnull=False).first()
+
         if transaction and transaction.pic:
-            image_size = len(transaction.pic)
-            print(f"Image size: {image_size} bytes")
-            
-            # Check if it's a valid JPEG
-            is_jpeg = transaction.pic.startswith(b'\xff\xd8\xff')
-            print(f"Is JPEG: {is_jpeg}")
-            
-            # Return image as HTTP response with proper content type and headers
-            response = HttpResponse(transaction.pic, content_type='image/jpeg')
+            image_data = bytes(transaction.pic) if not isinstance(transaction.pic, bytes) else transaction.pic
+
+            if len(image_data) < 100:
+                response = HttpResponse('Image not found', status=404)
+                response['Access-Control-Allow-Origin'] = '*'
+                return response
+
+            image_size = len(image_data)
+
+            response = HttpResponse(image_data, content_type='image/jpeg')
             response['Content-Disposition'] = f'inline; filename="vehicle_{transaction_id}.jpg"'
-            response['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
-            response['Access-Control-Allow-Origin'] = '*'  # Allow CORS
+            response['Cache-Control'] = 'public, max-age=3600'
+            response['Access-Control-Allow-Origin'] = '*'
             response['Access-Control-Allow-Methods'] = 'GET'
             response['Access-Control-Allow-Headers'] = 'Content-Type'
             response['Content-Length'] = str(image_size)
-            
-            print(f"Returning image response with {image_size} bytes")
             return response
         else:
-            print(f"No image found for transaction: {transaction_id}")
-            # Return 404 if no image found
             response = HttpResponse('Image not found', status=404)
             response['Access-Control-Allow-Origin'] = '*'
             return response
